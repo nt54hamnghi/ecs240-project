@@ -1,0 +1,14 @@
+Function-related grammar rules (restored in proposal.tex; retained for reference)
+
+<func-stmt>      ::= "fun" IDENT "(" <param>? ")" <block>
+<param>          ::= IDENT ("," IDENT)*
+<return-stmt>    ::= "return" <expr>? ";"
+<call-expr>      ::= IDENT "(" <args>? ")"
+<args>           ::= <expr> ("," <expr>)*
+
+Restored alternatives:
+- <stmt>: <func-stmt> | <return-stmt>
+- <primary>: <call-expr>
+
+Restored restriction note: return is only allowed inside functions, and
+nested function definitions are disallowed.

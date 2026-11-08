@@ -109,45 +109,36 @@ These must not be required for a working project.}
                    | <func-stmt>
                    | <return-stmt>
                    | <expr-stmt>
-<let-stmt>       ::= "let" <ident> ("=" <expr>)? ";"
-<assign-stmt>    ::= <ident> "=" <expr> ";"
+<block>          ::= "{" <prog> "}"
+<let-stmt>       ::= "let" IDENT ("=" <expr>)? ";"
+<assign-stmt>    ::= IDENT "=" <expr> ";"
 <if-stmt>        ::= "if" "(" <expr> ")" <block> ("else" <block>)?
 <loop-stmt>      ::= "loop" <block>
 <break-stmt>     ::= "break" ";"
-<func-stmt>      ::= "fun" <ident> "(" <param>? ")" <block>
-<param>          ::= <ident> ("," <ident>)*
+<func-stmt>      ::= "fun" IDENT "(" <param>? ")" <block>
+<param>          ::= IDENT ("," IDENT)*
 <return-stmt>    ::= "return" <expr>? ";"
-<block>          ::= "{" <prog> "}"
-<expr-stmt>      ::= <expr> ";"
-<expr>           ::= <int-expr> | <bool-expr>
-<group-expr>     ::= "(" <expr> ")"
-<call-expr>      ::= <ident> "(" <args>? ")"
+<call-expr>      ::= IDENT "(" <args>? ")"
 <args>           ::= <expr> ("," <expr>)*
-<int-expr>       ::= <int-expr> ("+" | "-" | "*" | "/") <int-expr>
-                   | "-" <int-expr>
-                   | <call-expr>
-                   | <primary-expr>
-                   | <int-literal>
-<bool-expr>      ::= <bool-expr> ("&" | "|" | "==" ) <bool-expr>
-                   | "!" <bool-expr>
-                   | <int-expr> ("==" | "!=" | ">" | ">=" | "<" | "<=") <int-expr>
-                   | <call-expr>
-                   | <primary-expr>
-                   | <bool-literal>
-<primary-expr>   ::= <group-expr> | <ident>
-<int-literal>    ::= "0" | [1-9] [0-9]*
-<bool-literal>   ::= "true" | "false"
-<ident>          ::= [a-zA-Z_] [a-zA-Z0-9_]*
+<expr-stmt>      ::= <expr> ";"
+<expr>           ::= <or>
+<or>             ::= <or> "|" <and> | <and>
+<and>            ::= <and> "&" <equality> | <equality>
+<equality>       ::= <equality> ("==" | "!=") <comparison> | <comparison>
+<comparison>     ::= <comparison> (">" | ">=" | "<" | "<=") <term>
+                   | <term>
+<term>           ::= <term> ("+" | "-") <factor> | <factor>
+<factor>         ::= <factor> ("*" | "/") <unary> | <unary>
+<unary>          ::= ("!" | "-") <unary> | <primary>
+<primary>        ::= INT | BOOL | IDENT | "(" <expr> ")" | <call-expr>
 
 \end{BVerbatim}
 \end{center}
-\noindent\textbf{Note:} This grammar is ambiguous with respect to operator
-precedence and associativity.
 
 \noindent\textbf{Note:} The grammar allows \texttt{break} outside loops,
 \texttt{return} outside functions, and nested function definitions.
 These restrictions will need to be enforced separately.
-
+\bigskip
 \noindent\textbf{Note:} Whitespace and line comments (starting with
 \texttt{//} and continuing to the end of the line) are omitted from
 this grammar and skipped during lexical analysis.
@@ -159,7 +150,7 @@ let a = 0;
 let b = 1;
 let c;
 c = a + b;
-let ready = (c >= 1) | true;
+let ready = (c >= 1) & true | false;
 \end{verbatim}
 
 \paragraph{Control Flow}
