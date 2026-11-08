@@ -98,6 +98,10 @@ These must not be required for a working project.}
 \subsection{Syntax and Example Programs}
 
 \subsubsection{Syntax}
+We used the grammar appendix and the chapter on parsing expressions in
+Robert Nystrom's \emph{Crafting Interpreters} as references when drafting
+our grammar~\cite{crafting-grammar,crafting-expressions}.
+
 \begin{center}
 \begin{BVerbatim}
 <prog>           ::= <stmt>*
@@ -276,14 +280,20 @@ List uncertainties and specific questions for instructor feedback.}
 % including at least two research papers, and cite them in the text.
 \renewcommand{\refname}{References Cited}
 \begin{thebibliography}{9}
+\raggedright
 \bibitem{paper1}
 [TODO: Research paper 1 --- authors, title, venue, year, and DOI or URL.]
 
 \bibitem{paper2}
 [TODO: Research paper 2 --- authors, title, venue, year, and DOI or URL.]
 
-\bibitem{source3}
-[TODO: Third source --- authors or organization, title, year, and URL.]
+\bibitem{crafting-grammar}
+Robert Nystrom. ``Appendix I: Grammar.'' \emph{Crafting Interpreters}.
+\url{https://craftinginterpreters.com/appendix-i.html}.
+
+\bibitem{crafting-expressions}
+Robert Nystrom. ``Parsing Expressions.'' \emph{Crafting Interpreters}.
+\url{https://craftinginterpreters.com/parsing-expressions.html}.
 \end{thebibliography}
 
 \end{document}
