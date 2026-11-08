@@ -1,0 +1,269 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+% ECS 240 Project Proposal
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+
+\usepackage[margin=1.5in]{geometry}
+
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\usepackage{booktabs,tabularx}
+\usepackage{fancyvrb}
+
+% \newcommand{\visiblehref}[2]{\href{#1}{#2}\footnote{\url{#1}}}
+
+\newcommand{\placeholder}[1]{\par\noindent\textit{[TODO: #1]}\par}
+
+\begin{document}
+
+\title{[Project Title]\\\large}
+\author{Chang Nguyen \and Nirak Choun \and Nguyen Ho}
+\date{}
+
+\maketitle
+
+\section{Introduction and Motivation}
+
+\subsection{Problem Domain and Motivation}
+\placeholder{State the application domain, the problem(s) the project will
+solve, and why they are interesting. Include at least three citations,
+including at least two research papers.}
+% Replace the bibliography placeholders below with actual sources, then cite
+% them here using \cite{paper1}, \cite{paper2}, and \cite{source3}.
+
+\subsection{Proposed Language}
+We propose a toy language for writing programs with integer and boolean
+expressions, conditional execution, loops, and functions. The language
+supports two types: Integers and Booleans.
+
+\subsubsection{Operators}
+The language supports the following expression operators:
+\begin{itemize}
+    \item Arithmetic: \texttt{+}, \texttt{-}, \texttt{*}, and \texttt{/},
+    with unary \texttt{-} for negation and parentheses for grouping.
+    \item Comparison: \texttt{==}, \texttt{!=}, \texttt{>}, \texttt{>=},
+    \texttt{<}, and \texttt{<=}.
+    \item Boolean operations: \texttt{!} (negation), \texttt{\&}
+    (AND), and \texttt{|} (OR).
+\end{itemize}
+
+\subsubsection{Language Constructs}
+Programs use \texttt{if}--\texttt{else} for conditional execution and
+\texttt{loop} with \texttt{break} for repetition. The language does not
+include \texttt{while} or \texttt{for} loops.
+
+The language supports functions, but nested function definitions are not allowed.
+Each function has its own scope. Variable lookup first searches the current function's
+scope and then the global scope. If a variable is not found in either scope, execution
+produces a runtime error.
+
+\subsection{Proposed Tool}
+\placeholder{Describe a basic interpreter plus a compiler, static analysis
+tool, dynamic analysis tool, or type system. State the inputs, outputs, and
+how users interact with the tool. Other tool ideas require instructor approval.}
+
+\subsection{Scope and Related Work}
+\placeholder{Discuss existing research and tools addressing similar problems.
+Explain how your project relates to them, whether the solution already
+exists, and what your project contributes. Cite relevant sources.}
+
+\section{Goals}
+
+\subsection{Minimum Goal}
+\placeholder{Describe the smallest working language and tool you commit to
+deliver. Identify essential constructs and tool capabilities.}
+
+\subsection{Target Goal}
+\placeholder{Describe the planned deliverable, including the important
+features beyond the minimum goal.}
+
+\subsection{Reach Goal}
+\placeholder{Describe optional extensions to pursue if time permits.
+These must not be required for a working project.}
+
+\section{Theory Part: Syntax and Semantics}
+
+\subsection{Syntax and Example Programs}
+
+\subsubsection{Syntax}
+\begin{center}
+\begin{BVerbatim}
+<prog>           ::= <stmt>*
+<stmt>           ::= <let-stmt>
+                   | <assign-stmt>
+                   | <if-stmt>
+                   | <loop-stmt>
+                   | <break-stmt>
+                   | <func-stmt>
+                   | <return-stmt>
+                   | <expr-stmt>
+<let-stmt>       ::= "let" <ident> ("=" <expr>)? ";"
+<assign-stmt>    ::= <ident> "=" <expr> ";"
+<if-stmt>        ::= "if" "(" <expr> ")" <block> ("else" <block>)?
+<loop-stmt>      ::= "loop" <block>
+<break-stmt>     ::= "break" ";"
+<func-stmt>      ::= "fun" <ident> "(" <param>? ")" <block>
+<param>          ::= <ident> ("," <ident>)*
+<return-stmt>    ::= "return" <expr>? ";"
+<block>          ::= "{" <prog> "}"
+<expr-stmt>      ::= <expr> ";"
+<expr>           ::= <int-expr> | <bool-expr>
+<group-expr>     ::= "(" <expr> ")"
+<call-expr>      ::= <ident> "(" <args>? ")"
+<args>           ::= <expr> ("," <expr>)*
+<int-expr>       ::= <int-expr> ("+" | "-" | "*" | "/") <int-expr>
+                   | "-" <int-expr>
+                   | <int-literal>
+                   | <group-expr>
+                   | <call-expr>
+                   | <ident>
+<bool-expr>      ::= <bool-expr> ("&" | "|" | "==" ) <bool-expr>
+                   | "!" <bool-expr>
+                   | <int-expr> ("==" | "!=" | ">" | ">=" | "<" | "<=") <int-expr>
+                   | <bool-literal>
+                   | <group-expr>
+                   | <call-expr>
+                   | <ident>
+<int-literal>    ::= "0" | [1-9] [0-9]*
+<bool-literal>   ::= "true" | "false"
+<ident>          ::= [a-zA-Z_] [a-zA-Z0-9_]*
+
+\end{BVerbatim}
+\end{center}
+\noindent\textbf{Note:} This grammar is ambiguous with respect to operator
+precedence and associativity.
+\medskip
+\noindent\textbf{Note:} Whitespace and line comments (starting with \texttt{//} and continuing to
+the end of the line) are omitted from this grammar and skipped during
+lexical analysis.
+\bigskip
+\placeholder{Figure out how to restrict \texttt{break} to loops and
+\texttt{return} to functions, and how to disallow nested function definitions.}
+
+\subsubsection{Example Programs}
+\paragraph{Expressions and Variables}
+\placeholder{Add an example using declarations, assignment, arithmetic,
+grouping, comparisons, and Boolean operations. Explain the final variable values.}
+
+\paragraph{Control Flow}
+\placeholder{Add an example using a loop, variable updates,
+\texttt{if}--\texttt{else}, and \texttt{break}. Explain the expected result.}
+
+\paragraph{Functions and Scope}
+\placeholder{Add an example using parameters, a return value, a function call
+within an expression, and access to a global variable. Explain the expected result.}
+
+\subsection{Semantics Sketch}
+\placeholder{In at most one paragraph, sketch the semantics as a set of
+(INPUT, prog, OUTPUT) triples. Define the input and output domains and
+explain how execution relates them to a valid program. A complete formal
+semantics will be required for the final report.}
+
+\section{Implementation Plan}
+
+\subsection{Tool and Language Selection}
+\placeholder{List the implementation language(s), development tools, and
+testing tools you plan to use, with brief reasons.}
+
+\subsection{Incorporating Existing Tools}
+\placeholder{State which parts will be built from scratch. List any existing
+software, libraries, or code bases you will use or interact with, and justify
+each dependency.}
+
+\subsection{Architecture of the Code}
+\placeholder{Describe the main components, their interfaces, and how data
+flows between them. Consider adding a diagram. The architecture may be tentative.}
+
+\subsection{Development Effort and Scope}
+\placeholder{Identify the functions, components, and modules to implement.
+Connect them to the architecture and minimum, target, or reach goals.
+Explicitly list features and components that are out of scope.}
+
+\subsection{Challenges}
+\placeholder{Identify likely technical challenges, what could go wrong,
+and fallback plans if particular components become difficult.}
+
+\section{Collaboration Plan}
+
+\subsection{Division of Work}
+\placeholder{Assign components that can be developed separately and explain
+how the group will coordinate interfaces, reviews, testing, and integration.}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Group member & Responsibilities \\
+\midrule
+Chang Nguyen & [TODO: components and responsibilities] \\
+Nirak Choun & [TODO: components and responsibilities] \\
+Nguyen Ho & [TODO: components and responsibilities] \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Meetings and Communication}
+\placeholder{Specify a meeting schedule (at least twice a week is suggested),
+a communication platform, and how you will track tasks and share code.}
+
+\subsection{Weekly Timeline}
+\placeholder{Replace the rows below with specific weeks or dates through the
+deadline. List deliverables, owners, and dependencies; add rows as needed.}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+Week / dates & Components and deliverables & Owners / dependencies \\
+\midrule
+{[Week 1]} & [TODO] & [TODO] \\
+{[Week 2]} & [TODO] & [TODO] \\
+{[Week 3]} & [TODO] & [TODO] \\
+{[Week 4]} & [TODO] & [TODO] \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Commitment Statements}
+% Each member should personally sign their statement before submission.
+\noindent I commit to work and contribute equally to this project.
+\\Name: Chang Nguyen \qquad Signature: \underline{\hspace{1.2in}}
+
+\medskip
+\noindent I commit to work and contribute equally to this project.
+\\Name: Nirak Choun \qquad Signature: \underline{\hspace{1.2in}}
+
+\medskip
+\noindent I commit to work and contribute equally to this project.
+\\Name: Nguyen Ho \qquad Signature: \underline{\hspace{1.2in}}
+
+\section{Conclusion and Questions for Feedback}
+\placeholder{In one or two paragraphs, describe what success would look like,
+what makes the project exciting, and why the application domain matters.
+List uncertainties and specific questions for instructor feedback.}
+
+% Mandatory: replace these placeholders with at least three real sources,
+% including at least two research papers, and cite them in the text.
+\renewcommand{\refname}{References Cited}
+\begin{thebibliography}{9}
+\bibitem{paper1}
+[TODO: Research paper 1 --- authors, title, venue, year, and DOI or URL.]
+
+\bibitem{paper2}
+[TODO: Research paper 2 --- authors, title, venue, year, and DOI or URL.]
+
+\bibitem{source3}
+[TODO: Third source --- authors or organization, title, year, and URL.]
+\end{thebibliography}
+
+\end{document}
