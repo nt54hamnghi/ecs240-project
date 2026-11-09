@@ -21,6 +21,8 @@
 
 \usepackage{booktabs,tabularx}
 \usepackage{fancyvrb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
 
 % \newcommand{\visiblehref}[2]{\href{#1}{#2}\footnote{\url{#1}}}
 
@@ -200,8 +202,8 @@ semantics will be required for the final report.}
 \section{Implementation Plan}
 
 \subsection{Tool and Language Selection}
-\placeholder{List the implementation language(s), development tools, and
-testing tools you plan to use, with brief reasons.}
+The entire pipeline, including the frontend, interpreter, and static analyzer,
+will be implemented in Rust.
 
 \subsection{Incorporating Existing Tools}
 \placeholder{State which parts will be built from scratch. List any existing
@@ -209,17 +211,93 @@ software, libraries, or code bases you will use or interact with, and justify
 each dependency.}
 
 \subsection{Architecture of the Code}
-\placeholder{Describe the main components, their interfaces, and how data
-flows between them. Consider adding a diagram. The architecture may be tentative.}
+The interpreter and static analyzer share a frontend that parses source code
+into an abstract syntax tree (AST), as shown below.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    yscale=1.3,
+    process/.style={draw, rounded corners, fill=blue!7,
+                    minimum width=2.2cm, minimum height=0.7cm, align=center},
+    data/.style={align=center},
+    flow/.style={-{Stealth[length=2.5mm,width=1.8mm]}, thick}
+]
+\node[data] (source) at (0,0) {Source code};
+\node[process] (lexer) at (0,-0.8) {Lexer};
+\node[data] (tokens) at (0,-1.6) {Token stream};
+\node[process] (parser) at (0,-2.4) {Parser};
+\node[data] (ast) at (0,-3.2) {AST};
+
+\node[process] (interpreter) at (-3,-4.5) {Interpreter};
+\node[data] (execution) at (-3,-5.6) {Execution};
+\node[process] (checks) at (0,-4.5) {AST checks};
+\node[data] (astdiag) at (0,-5.6) {Diagnostics};
+\node[process] (builder) at (3,-4.5) {CFG builder};
+\node[data] (cfg) at (3,-5.6) {CFG};
+\node[process] (dfa) at (3,-6.7) {Data flow\\analysis};
+\node[data] (dfadiag) at (3,-7.8) {Diagnostics};
+
+\foreach \from/\to in {source/lexer,lexer/tokens,tokens/parser,parser/ast,
+    interpreter/execution,checks/astdiag,builder/cfg,cfg/dfa,dfa/dfadiag}
+    \draw[flow] (\from) -- (\to);
+\draw[flow] (ast) -- (checks);
+\draw[flow] (ast.south) -- (0,-3.7) -| (interpreter.north);
+\draw[flow] (ast.south) -- (0,-3.7) -| (builder.north);
+
+\begin{scope}[on background layer]
+\node[draw=gray, dashed, rounded corners, inner sep=0.25cm,
+      fit=(checks)(astdiag)(builder)(dfa)(dfadiag),
+      label={[font=\small]below:Static analyzer}] {};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+The code will be organized into one shared library and two binaries.
+The frontend will support two error-handling modes: \textbf{error propagation}
+and \textbf{error collection}, selected through a Rust feature flag.
+
+In the default mode, \textbf{error propagation}, scanning and parsing errors
+propagate through \texttt{Result} return values to the top-level function,
+which can either synchronize and continue parsing or return the error to the
+caller. The interpreter binary will use this mode.
+
+In \textbf{error collection} mode, diagnostics accumulate in a \texttt{Vec}
+during scanning and parsing, with synchronization and continued parsing as
+the default behavior. The static analyzer binary will use this mode to report
+multiple errors together rather than requiring users to fix them one at a time.
 
 \subsection{Development Effort and Scope}
-\placeholder{Identify the functions, components, and modules to implement.
-Connect them to the architecture and minimum, target, or reach goals.
-Explicitly list features and components that are out of scope.}
+The planned modules are shown below:
+\begin{center}
+\begin{BVerbatim}[fontsize=\small]
+src/
+|-- lib.rs                  # Shared library interface
+|-- lexer.rs                # Source code to tokens
+|-- parser.rs               # Tokens to AST
+|-- ast.rs                  # AST types
+|-- errors.rs               # Error reporting and diagnostics
+`-- bin/
+    |-- interpreter/
+    |   |-- main.rs         # REPL and file execution
+    |   `-- exec.rs         # AST execution and runtime state
+    `-- analyzer/
+        |-- main.rs         # Runs checks and reports diagnostics
+        |-- cfg.rs          # AST to control flow graph
+        `-- dataflow.rs     # Data flow checks over the CFG
+\end{BVerbatim}
+\end{center}
+
+\placeholder{Map the work to minimum, target, and reach goals, and list
+features and components that are out of scope.}
 
 \subsection{Challenges}
-\placeholder{Identify likely technical challenges, what could go wrong,
-and fallback plans if particular components become difficult.}
+Our main challenge is implementing control flow graph (CFG) construction and
+data flow analysis (DFA), as we need to fill gaps in our knowledge of these
+areas. The initial implementation may have limitations in code quality and
+performance, but we will prioritize correctness over optimization.
+\bigskip
+\placeholder{Expand the challenges and fallback plans after group discussion.}
 
 \section{Collaboration Plan}
 
