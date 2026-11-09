@@ -105,15 +105,15 @@ our grammar~\cite{crafting-grammar,crafting-expressions}.
 \begin{center}
 \begin{BVerbatim}
 <prog>           ::= <stmt>*
-<stmt>           ::= <let-stmt>
+<stmt>           ::= <block-stmt> | <func-stmt>
+<block>          ::= "{" <block-stmt>* "}"
+<block-stmt>     ::= <let-stmt>
                    | <assign-stmt>
                    | <if-stmt>
                    | <loop-stmt>
                    | <break-stmt>
-                   | <func-stmt>
                    | <return-stmt>
                    | <expr-stmt>
-<block>          ::= "{" <prog> "}"
 <let-stmt>       ::= "let" IDENT ("=" <expr>)? ";"
 <assign-stmt>    ::= IDENT "=" <expr> ";"
 <if-stmt>        ::= "if" "(" <expr> ")" <block> ("else" <block>)?
@@ -139,13 +139,15 @@ our grammar~\cite{crafting-grammar,crafting-expressions}.
 \end{BVerbatim}
 \end{center}
 
-\noindent\textbf{Note:} The grammar allows \texttt{break} outside loops,
-\texttt{return} outside functions, and nested function definitions.
-These restrictions will need to be enforced separately.
+\noindent\textbf{Note:} The grammar allows \texttt{break} outside loops
+and \texttt{return} outside functions. These restrictions will need to
+be enforced in implementation.
+
 \bigskip
+
 \noindent\textbf{Note:} Whitespace and line comments (starting with
 \texttt{//} and continuing to the end of the line) are omitted from
-this grammar and skipped during lexical analysis.
+this grammar and skipped during scanning.
 
 \subsubsection{Example Programs}
 \paragraph{Expressions and Variables}
