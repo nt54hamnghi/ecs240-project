@@ -39,13 +39,48 @@
 \section{Introduction and Motivation}
 
 \subsection{Problem Domain and Motivation}
-\placeholder{State the application domain, the problem(s) the project will
-solve, and why they are interesting. Include at least three citations,
-including at least two research papers.}
-% Replace the bibliography placeholders below with actual sources, then cite
-% them here using \cite{paper1}, \cite{paper2}, and \cite{source3}.
+
+Static program analysis is an important technique for examining
+program behavior without executing the program. One application
+is detecting unreachable code, which identifies the statements
+that cannot execute under the program's possible execution
+conditions. Unreachable code may indicate logical errors or
+unnecessary code that complicates software maintenance.
+Cassieri et al. (2022) investigated dead methods in 13 desktop
+applications and found that developers continued modifying
+methods that were unused or unreachable, including methods
+that were later removed. Their findings highlight the potential
+maintenance costs associated with dead code \cite{paper1}.
+
+Although it is useful to detect unreachable code or other bugs,
+identifying their underlying causes can be challenging,
+especially in a large codebase. A statement may be unreachable
+because of variable assignments or contradictory conditions
+established earlier in the program, a double for loop can
+cause the application to slow down, or a denominator may
+evaluate to zero somewhere in the program before being used
+in division. Chou et al. (2011) investigated this problem in
+hardware verification and proposed a diagnosis technique that
+identifies variables responsible for unreachability and suggests
+changes that could make affected code reachable \cite{paper2}.
+More recently, Feng et al. (2026) demonstrated the importance
+of reasoning about execution-path constraints when determining
+whether vulnerable code in software dependencies can be
+reached \cite{source3}.
+
+Motivated by these studies, we propose \textbf{PyEye}, an
+explainable static analysis tool for a restricted Python-like
+programming language. PyEye aims to detect common programming
+issues, including unused variables, duplicate declarations,
+immutable variable reassignment, unused functions, and
+unreachable code. The tool will provide clear diagnostic
+reports explaining the detected issues and their locations.
+Our goal is to help developers identify programming mistakes
+early and reduce the effort required to debug and maintain
+their code.
 
 \subsection{Proposed Language}
+\label{sec:proposed-language}
 We propose a toy language for writing programs with integer and boolean
 expressions, conditional execution, loops, and functions. The language
 supports two types: Integers and Booleans.
@@ -71,29 +106,104 @@ Each function has its own scope. Variable lookup first searches the current func
 scope and then the global scope. If a variable is not found in either scope, execution
 produces a runtime error.
 
+
 \subsection{Proposed Tool}
-\placeholder{Describe a basic interpreter plus a compiler, static analysis
-tool, dynamic analysis tool, or type system. State the inputs, outputs, and
-how users interact with the tool. Other tool ideas require instructor approval.}
+
+PyEye will be a static analysis tool for our small Python-like
+programming language. It will examine source code without executing
+it and identify common programming errors. The project will also
+include a basic interpreter to execute valid programs.
+
+The static analyzer will support five main features as minimum
+requirements:
+
+\begin{itemize}
+    \item \textbf{Unused variables:}
+    Detect variables that are declared but never read.
+
+    \item \textbf{Duplicate declarations:}
+    Detect variables that are declared more than once in the
+    same scope.
+
+    \item \textbf{Immutable variable reassignment:}
+    Detect attempts to modify variables declared using
+    \texttt{let}.
+
+    \item \textbf{Unused functions:}
+    Detect functions that are defined but never called,
+    excluding the \texttt{main} function.
+
+    \item \textbf{Unreachable code:}
+    Detect statements that appear after an unconditional
+    \texttt{yeet} statement within the same block.
+\end{itemize}
+
+The tool will take PyEye source code as input. It will parse
+the code into an Abstract Syntax Tree (AST) and analyze the
+program using symbol tables, AST traversal, and basic
+control-flow analysis.
+
+For each detected issue, the tool will report its location,
+the type of issue, and a short explanation of why it occurs.
+Errors will indicate invalid programs, while warnings will
+identify potential problems such as unused variables or
+functions.
+
+The interpreter will execute PyEye programs according to
+the language rules defined in Section~\ref{sec:proposed-language}.
+
 
 \subsection{Scope and Related Work}
-\placeholder{Discuss existing research and tools addressing similar problems.
-Explain how your project relates to them, whether the solution already
-exists, and what your project contributes. Cite relevant sources.}
+- Muthuraman et al. (2026) reviewed 146 research papers on techniques for optimizing static analysis,
+highlighting how existing research focuses on improving execution speed, memory usage, and precision.
+While these aspects are important, PyEye takes a different approach by focusing on providing consistent,
+understandable diagnostics that explains the issues detected in source code.
+
+- Similarly, Chou et al. (2011) proposed advanced techniques for diagnosing unreachable code in hardware verification.
+Their research highlights the importance of identifying and explaining why certain code cannot be executed, rather than
+simply detecting it. This motivates PyEye's goal of providing explanations for detected programming issues, including
+unreachable statements as a target feature. Unlike their approach, PyEye focuses on simpler static-analysis techniques
+for a restricted Python-like language.  
 
 \section{Goals}
 
 \subsection{Minimum Goal}
-\placeholder{Describe the smallest working language and tool you commit to
-deliver. Identify essential constructs and tool capabilities.}
+
+\begin{itemize}
+    \item \textbf{Unused variables:}
+    Detect variables that are declared but never read.
+
+    \item \textbf{Undefined variables:}
+    Detect variables that are read but never declared.
+
+    \item \textbf{Unused parameters:}
+    Detect parameters that are passed in but never read.
+
+    \item \textbf{Duplicate declarations:}
+    Detect variables that are declared more than once in the
+    same scope.
+
+    \item \textbf{Unused functions:}
+    Detect functions that are defined but never called,
+    excluding the \texttt{main} function.
+
+    \item \textbf{Wrong argument count:}
+    Detect mismatch in argument count when passing arguments into a function.
+
+    
+\end{itemize}
 
 \subsection{Target Goal}
-\placeholder{Describe the planned deliverable, including the important
-features beyond the minimum goal.}
+
+No reachable break (IL)
+
+Unreachable statement
 
 \subsection{Reach Goal}
-\placeholder{Describe optional extensions to pursue if time permits.
-These must not be required for a working project.}
+
+Performance issue detection such as multiple looping
+
+Be able to detect division by 0
 
 \section{Theory Part: Syntax and Semantics}
 
