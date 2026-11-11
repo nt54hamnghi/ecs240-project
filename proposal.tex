@@ -40,44 +40,20 @@
 
 \subsection{Problem Domain and Motivation}
 
-Static program analysis is an important technique for examining
-program behavior without executing the program. One application
-is detecting unreachable code, which identifies the statements
-that cannot execute under the program's possible execution
-conditions. Unreachable code may indicate logical errors or
-unnecessary code that complicates software maintenance.
-Cassieri et al. (2022) investigated dead methods in 13 desktop
-applications and found that developers continued modifying
-methods that were unused or unreachable, including methods
-that were later removed. Their findings highlight the potential
-maintenance costs associated with dead code \cite{paper1}.
+Static program analysis examines program behavior without execution, 
+helping detect programming errors such as unreachable code. Cassieri et al. (2022) found 
+that developers continued modifying unused or unreachable methods, highlighting the maintenance costs of dead code \cite{paper1}.
 
-Although it is useful to detect unreachable code or other bugs,
-identifying their underlying causes can be challenging,
-especially in a large codebase. A statement may be unreachable
-because of variable assignments or contradictory conditions
-established earlier in the program, a double for loop can
-cause the application to slow down, or a denominator may
-evaluate to zero somewhere in the program before being used
-in division. Chou et al. (2011) investigated this problem in
-hardware verification and proposed a diagnosis technique that
-identifies variables responsible for unreachability and suggests
-changes that could make affected code reachable \cite{paper2}.
-More recently, Feng et al. (2026) demonstrated the importance
-of reasoning about execution-path constraints when determining
-whether vulnerable code in software dependencies can be
-reached \cite{source3}.
+However, understanding the causes of programming errors can be challenging. 
+Chou et al. (2011) proposed a technique for diagnosing unreachable code in 
+hardware verification and suggesting possible fixes \cite{paper2}. Similarly, Feng et 
+al. (2026) demonstrated the importance of analyzing execution-path constraints to determine whether vulnerable code is reachable \cite{source3}.
 
-Motivated by these studies, we propose \textbf{PyEye}, an
-explainable static analysis tool for a restricted Python-like
-programming language. PyEye aims to detect common programming
-issues, including unused variables, duplicate declarations,
-immutable variable reassignment, unused functions, and
-unreachable code. The tool will provide clear diagnostic
-reports explaining the detected issues and their locations.
-Our goal is to help developers identify programming mistakes
-early and reduce the effort required to debug and maintain
-their code.
+Motivated by these studies, we propose \textbf{PyEye}, an explainable static 
+analyzer for a restricted Python-like language. PyEye aims to detect common issues, 
+including unused and undefined variables, unused parameters and functions, duplicate declarations, 
+and incorrect function argument counts. It will provide clear, human-readable diagnostics explaining 
+detected issues and their causes, with unreachable-code detection and more advanced analyses as additional goals.
 
 \subsection{Proposed Language}
 \label{sec:proposed-language}
