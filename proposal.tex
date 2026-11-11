@@ -56,20 +56,18 @@ and incorrect function argument counts. It will provide clear, human-readable di
 detected issues and their causes, with unreachable-code detection and more advanced analyses as additional goals.
 
 \subsection{Proposed Language}
-\label{sec:proposed-language}
 We propose a toy language for writing programs with integer and boolean
 expressions, conditional execution, loops, and functions. The language
 supports two types: Integers and Booleans.
 
 \subsubsection{Operators}
-The language supports the following expression operators:
 \begin{itemize}
-    \item Arithmetic: \texttt{+}, \texttt{-}, \texttt{*}, and \texttt{/},
-    with unary \texttt{-} for negation and parentheses for grouping.
+    \setlength{\itemsep}{0pt}
+    \item Arithmetic: \texttt{+}, \texttt{-}, \texttt{*}, \texttt{/},
+    and unary \texttt{-}, with parentheses for grouping.
     \item Comparison: \texttt{==}, \texttt{!=}, \texttt{>}, \texttt{>=},
     \texttt{<}, and \texttt{<=}.
-    \item Boolean operations: \texttt{!} (negation), \texttt{\&}
-    (AND), and \texttt{|} (OR).
+    \item Boolean: \texttt{!} (NOT), \texttt{\&} (AND), and \texttt{|} (OR).
 \end{itemize}
 
 \subsubsection{Language Constructs}
@@ -81,7 +79,6 @@ The language supports functions, but nested function definitions are not allowed
 Each function has its own scope. Variable lookup first searches the current function's
 scope and then the global scope. If a variable is not found in either scope, execution
 produces a runtime error.
-
 
 \subsection{Proposed Tool}
 
@@ -144,64 +141,33 @@ for a restricted Python-like language.
 \section{Goals}
 
 \subsection{Minimum Goal}
-
-\begin{itemize}
-    \item \textbf{Unused variables:}
-    Detect variables that are declared but never read.
-
-    \item \textbf{Undefined variables:}
-    Detect variables that are read but never declared.
-
-    \item \textbf{Unused parameters:}
-    Detect parameters that are passed in but never read.
-
-    \item \textbf{Duplicate declarations:}
-    Detect variables that are declared more than once in the
-    same scope.
-
-    \item \textbf{Unused functions:}
-    Detect functions that are defined but never called,
-    excluding the \texttt{main} function.
-
-    \item \textbf{Wrong argument count:}
-    Detect mismatch in argument count when passing arguments into a function.
-
-    
-\end{itemize}
+\placeholder{Describe the smallest working language and tool you commit to
+deliver. Identify essential constructs and tool capabilities.}
 
 \subsection{Target Goal}
-
-No reachable break (IL)
-
-Unreachable statement
+\placeholder{Describe the planned deliverable, including the important
+features beyond the minimum goal.}
 
 \subsection{Reach Goal}
-
-Performance issue detection such as multiple looping
-
-Be able to detect division by 0
+\placeholder{Describe optional extensions to pursue if time permits.
+These must not be required for a working project.}
 
 \section{Theory Part: Syntax and Semantics}
 
 \subsection{Syntax and Example Programs}
 
 \subsubsection{Syntax}
-We used the grammar appendix and the chapter on parsing expressions in
-Robert Nystrom's \emph{Crafting Interpreters} as references when drafting
-our grammar~\cite{crafting-grammar,crafting-expressions}.
+Our grammar draws on Nystrom's \emph{Crafting
+Interpreters}~\cite{crafting-grammar,crafting-expressions}.
 
 \begin{center}
-\begin{BVerbatim}
+\begin{BVerbatim}[fontsize=\small,baselinestretch=0.95]
 <prog>           ::= <stmt>*
 <stmt>           ::= <block-stmt> | <func-stmt>
 <block>          ::= "{" <block-stmt>* "}"
-<block-stmt>     ::= <let-stmt>
-                   | <assign-stmt>
-                   | <if-stmt>
-                   | <loop-stmt>
-                   | <break-stmt>
-                   | <return-stmt>
-                   | <expr-stmt>
+<block-stmt>     ::= <let-stmt> | <assign-stmt> | <if-stmt>
+                  | <loop-stmt> | <break-stmt> | <return-stmt>
+                  | <expr-stmt>
 <let-stmt>       ::= "let" IDENT ("=" <expr>)? ";"
 <assign-stmt>    ::= IDENT "=" <expr> ";"
 <if-stmt>        ::= "if" "(" <expr> ")" <block> ("else" <block>)?
@@ -217,73 +183,63 @@ our grammar~\cite{crafting-grammar,crafting-expressions}.
 <or>             ::= <or> "|" <and> | <and>
 <and>            ::= <and> "&" <equality> | <equality>
 <equality>       ::= <equality> ("==" | "!=") <comparison> | <comparison>
-<comparison>     ::= <comparison> (">" | ">=" | "<" | "<=") <term>
-                   | <term>
+<comparison>     ::= <comparison> (">" | ">=" | "<" | "<=") <term> | <term>
 <term>           ::= <term> ("+" | "-") <factor> | <factor>
 <factor>         ::= <factor> ("*" | "/") <unary> | <unary>
 <unary>          ::= ("!" | "-") <unary> | <primary>
 <primary>        ::= INT | BOOL | IDENT | "(" <expr> ")" | <call-expr>
-
 \end{BVerbatim}
 \end{center}
-
-\noindent\textbf{Note:} The grammar allows \texttt{break} outside loops
-and \texttt{return} outside functions. These restrictions will need to
-be enforced in implementation.
-
 \bigskip
-
-\noindent\textbf{Note:} Whitespace and line comments (starting with
-\texttt{//} and continuing to the end of the line) are omitted from
-this grammar and skipped during scanning.
+\noindent\textbf{Note:} The implementation will restrict \texttt{break}
+to loops and \texttt{return} to functions. Scanning will skip whitespace
+and \texttt{//} line comments, which are omitted from the grammar.
 
 \subsubsection{Example Programs}
-\paragraph{Expressions and Variables}
-\begin{verbatim}
+\noindent\begin{minipage}[t]{0.49\linewidth}
+\textbf{Expressions and Variables}
+\begin{Verbatim}[fontsize=\small]
 let a = 0;
-let b = 1;
-let c;
-c = a + b;
-let ready = (c >= 1) & true | false;
-\end{verbatim}
+let b;
+b = a + 1;
+let ready = (b >= 1) & true | false;
+\end{Verbatim}
 
-\paragraph{Control Flow}
-\begin{verbatim}
+\medskip
+\textbf{Control Flow}
+\begin{Verbatim}[fontsize=\small]
 fun sum(n) {
   let i = 0;
   loop {
-    if (i >= n) {
-      break;
-    } else {
-      i = i + 1;
-    }
+    if (i >= n) { break; }
+    else { i = i + 1; }
   }
   return i;
 }
-
-let result = sum(3);
-\end{verbatim}
-
-\paragraph{Functions and Scope}
-\begin{verbatim}
-// g is a global variable
+\end{Verbatim}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+\textbf{Functions and Scope}
+\begin{Verbatim}[fontsize=\small]
 let g = 10;
-
-fun foo(a, b) {
-  g = a + b;
-}
-
+fun foo(a, b) { g = a + b; }
 fun main() {
-  foo(1, 2);
-  // g is now 3
+  foo(1, 2); // g is now 3
 }
-\end{verbatim}
+\end{Verbatim}
+\end{minipage}
 
 \subsection{Semantics Sketch}
-\placeholder{In at most one paragraph, sketch the semantics as a set of
-(INPUT, prog, OUTPUT) triples. Define the input and output domains and
-explain how execution relates them to a valid program. A complete formal
-semantics will be required for the final report.}
+Let $C$ be a deterministic reference interpreter. We define the language
+semantics as
+\[
+S = \{(\texttt{INPUT}, \texttt{prog}, \texttt{OUTPUT})
+      \mid C(\texttt{INPUT}, \texttt{prog}) = \texttt{OUTPUT}\},
+\]
+where $\texttt{prog} \in L(G)$ for the grammar $G$ defined above, and
+$\texttt{INPUT}, \texttt{OUTPUT} \in \mathbb{Z}
+\cup \{\mathrm{true}, \mathrm{false}\} \cup \{\mathrm{unit}\}$,
+with $\mathrm{unit}$ denoting no input or output, respectively.
 
 \section{Implementation Plan}
 
@@ -292,9 +248,12 @@ The entire pipeline, including the frontend, interpreter, and static analyzer,
 will be implemented in Rust.
 
 \subsection{Incorporating Existing Tools}
-\placeholder{State which parts will be built from scratch. List any existing
-software, libraries, or code bases you will use or interact with, and justify
-each dependency.}
+We will build the lexer, parser, interpreter, and static analyses from scratch.
+Supporting Rust libraries will reduce boilerplate: \texttt{thiserror} and/or
+\texttt{color\_eyre} for error handling, \texttt{clap} for command-line
+interfaces, and \texttt{rstest} for parameterized tests. As a reach goal,
+we may use \texttt{miette} to display diagnostics with source locations
+highlighted.
 
 \subsection{Architecture of the Code}
 The interpreter and static analyzer share a frontend that parses source code
@@ -302,34 +261,35 @@ into an abstract syntax tree (AST), as shown below.
 
 \begin{center}
 \begin{tikzpicture}[
-    font=\small,
-    yscale=1.3,
+    font=\footnotesize,
     process/.style={draw, rounded corners, fill=blue!7,
-                    minimum width=2.2cm, minimum height=0.7cm, align=center},
-    data/.style={align=center},
-    flow/.style={-{Stealth[length=2.5mm,width=1.8mm]}, thick}
+                    minimum width=1.1cm, minimum height=0.7cm,
+                    inner xsep=2pt, align=center},
+    data/.style={inner xsep=2pt, align=center},
+    flow/.style={-{Stealth[length=2mm,width=1.4mm]}, thick}
 ]
-\node[data] (source) at (0,0) {Source code};
-\node[process] (lexer) at (0,-0.8) {Lexer};
-\node[data] (tokens) at (0,-1.6) {Token stream};
-\node[process] (parser) at (0,-2.4) {Parser};
-\node[data] (ast) at (0,-3.2) {AST};
+\node[data] (source) at (0,0) {Source\\code};
+\node[process] (lexer) at (1.6,0) {Lexer};
+\node[process] (parser) at (3.8,0) {Parser};
+\node[data] (ast) at (5.2,0) {AST};
 
-\node[process] (interpreter) at (-3,-4.5) {Interpreter};
-\node[data] (execution) at (-3,-5.6) {Execution};
-\node[process] (checks) at (0,-4.5) {AST checks};
-\node[data] (astdiag) at (0,-5.6) {Diagnostics};
-\node[process] (builder) at (3,-4.5) {CFG builder};
-\node[data] (cfg) at (3,-5.6) {CFG};
-\node[process] (dfa) at (3,-6.7) {Data flow\\analysis};
-\node[data] (dfadiag) at (3,-7.8) {Diagnostics};
+\node[process] (interpreter) at (7,1.2) {Interpreter};
+\node[data] (execution) at (9.3,1.2) {Execution};
+\node[process] (checks) at (7,0) {AST\\checks};
+\node[data] (astdiag) at (9.3,0) {Diagnostics};
+\node[process] (builder) at (7,-1.2) {CFG\\builder};
+\node[data] (cfg) at (8.5,-1.2) {CFG};
+\node[process] (dfa) at (10,-1.2) {Data flow\\analysis};
+\node[data] (dfadiag) at (12.1,-1.2) {Diagnostics};
 
-\foreach \from/\to in {source/lexer,lexer/tokens,tokens/parser,parser/ast,
+\foreach \from/\to in {source/lexer,parser/ast,
     interpreter/execution,checks/astdiag,builder/cfg,cfg/dfa,dfa/dfadiag}
     \draw[flow] (\from) -- (\to);
+\draw[flow] (lexer) -- node[above, font=\scriptsize, align=center]
+    {Token\\stream} (parser);
 \draw[flow] (ast) -- (checks);
-\draw[flow] (ast.south) -- (0,-3.7) -| (interpreter.north);
-\draw[flow] (ast.south) -- (0,-3.7) -| (builder.north);
+\draw[flow] (ast.east) -- (5.8,0) |- (interpreter.west);
+\draw[flow] (ast.east) -- (5.8,0) |- (builder.west);
 
 \begin{scope}[on background layer]
 \node[draw=gray, dashed, rounded corners, inner sep=0.25cm,
@@ -339,19 +299,11 @@ into an abstract syntax tree (AST), as shown below.
 \end{tikzpicture}
 \end{center}
 
-The code will be organized into one shared library and two binaries.
-The frontend will support two error-handling modes: \textbf{error propagation}
-and \textbf{error collection}, selected through a Rust feature flag.
-
-In the default mode, \textbf{error propagation}, scanning and parsing errors
-propagate through \texttt{Result} return values to the top-level function,
-which can either synchronize and continue parsing or return the error to the
-caller. The interpreter binary will use this mode.
-
-In \textbf{error collection} mode, diagnostics accumulate in a \texttt{Vec}
-during scanning and parsing, with synchronization and continued parsing as
-the default behavior. The static analyzer binary will use this mode to report
-multiple errors together rather than requiring users to fix them one at a time.
+The code will comprise a shared library and two binaries, with a Rust feature
+flag selecting frontend error handling. By default, the interpreter propagates
+scanning and parsing errors via \texttt{Result}, allowing top-level recovery
+or return to the caller. The static analyzer instead collects diagnostics in
+a \texttt{Vec} and recovers automatically to report multiple errors at once.
 
 \subsection{Development Effort and Scope}
 The planned modules are shown below:
@@ -369,8 +321,7 @@ src/
     |   `-- exec.rs         # AST execution and runtime state
     `-- analyzer/
         |-- main.rs         # Runs checks and reports diagnostics
-        |-- cfg.rs          # AST to control flow graph
-        `-- dataflow.rs     # Data flow checks over the CFG
+        |-- cfg.rs          # Control flow graph builder and analysis
 \end{BVerbatim}
 \end{center}
 
