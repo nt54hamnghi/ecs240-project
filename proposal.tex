@@ -339,38 +339,40 @@ performance, but we will prioritize correctness over optimization.
 \section{Collaboration Plan}
 
 \subsection{Division of Work}
-\placeholder{Assign components that can be developed separately and explain
-how the group will coordinate interfaces, reviews, testing, and integration.}
+Each member owns one component behind the shared AST, so the parts can be
+built in parallel. We will fix the AST and diagnostic types first; later
+changes to them go through a pull request reviewed by another member. Each
+member tests their own component, and shared example programs run through
+both tools.
 
 \begin{center}
 \begin{tabularx}{\linewidth}{@{}lX@{}}
 \toprule
 Group member & Responsibilities \\
 \midrule
-Chang Nguyen & [TODO: components and responsibilities] \\
-Nirak Choun & [TODO: components and responsibilities] \\
-Nguyen Ho & [TODO: components and responsibilities] \\
+Chang Nguyen & Interpreter: execution, scopes, function calls, REPL \\
+Nirak Choun & Frontend: lexer, parser, AST types \\
+Nguyen Ho & Static analyzer: AST checks, CFG builder, data flow analysis \\
 \bottomrule
 \end{tabularx}
 \end{center}
 
 \subsection{Meetings and Communication}
-\placeholder{Specify a meeting schedule (at least twice a week is suggested),
-a communication platform, and how you will track tasks and share code.}
+We will meet twice a week (Mondays and Wednesdays) and use our WhatsApp
+group day to day. Code lives in a shared GitHub repository, with feature branches,
+pull requests and GitHub issues for tasks.
 
 \subsection{Weekly Timeline}
-\placeholder{Replace the rows below with specific weeks or dates through the
-deadline. List deliverables, owners, and dependencies; add rows as needed.}
 
 \begin{center}
 \begin{tabularx}{\linewidth}{@{}lXX@{}}
 \toprule
 Week / dates & Components and deliverables & Owners / dependencies \\
 \midrule
-{[Week 1]} & [TODO] & [TODO] \\
-{[Week 2]} & [TODO] & [TODO] \\
-{[Week 3]} & [TODO] & [TODO] \\
-{[Week 4]} & [TODO] & [TODO] \\
+Nov 13--19 & Shared AST and diagnostic types; expression parsing and evaluation; CFG design & All, then each owner \\
+Nov 20--26 & Control flow in parser and interpreter; AST checks and CFG builder; minimum goal for the presentation & All depend on the parser \\
+Nov 27--Dec 3 & Functions and scoping; data flow analysis; line-number diagnostics (target goal) & Chang, Nguyen; Nirak on tests \\
+Dec 4--11 & Testing, reach goal if time permits, formal semantics, final report (Dec 11) & All \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -389,9 +391,18 @@ Week / dates & Components and deliverables & Owners / dependencies \\
 \\Name: Nguyen Ho \qquad Signature: \underline{\hspace{1.2in}}
 
 \section{Conclusion and Questions for Feedback}
-\placeholder{In one or two paragraphs, describe what success would look like,
-what makes the project exciting, and why the application domain matters.
-List uncertainties and specific questions for instructor feedback.}
+If the project succeeds, one frontend will feed both an interpreter that runs
+programs and a static analyzer that reports errors before they run. The two
+tools check each other: comparing the analyzer's predictions with the
+interpreter's actual behavior on each test program shows where the analysis
+is correct, too cautious or wrong. Building the CFG and data flow analysis
+ourselves also teaches the techniques that real compilers and linters use.
+
+Questions for feedback: (1) Is an interpreter plus a CFG-based analyzer with
+one or two data flow analyses the right scope for three people? (2) Should
+the analyzer be sound, or is a best-effort analysis with documented limits
+acceptable? (3) Which style of formal semantics do you expect in the final
+report?
 
 % Mandatory: replace these placeholders with at least three real sources,
 % including at least two research papers, and cite them in the text.
