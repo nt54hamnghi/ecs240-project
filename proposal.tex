@@ -8,7 +8,7 @@
 \usepackage{amsthm}
 \usepackage{enumerate}
 
-\usepackage[margin=1.5in]{geometry}
+\usepackage[left=1.5in,right=1.5in,top=1in,bottom=1in]{geometry}
 
 \usepackage{xcolor}
 \usepackage{hyperref}
@@ -30,7 +30,7 @@
 
 \begin{document}
 
-\title{[Project Title]\\\large}
+\title{\vspace{-0.7874in}Alpha and Alphalyzer: Designing a Language and Its Analysis Tools}
 \author{Chang Nguyen \and Nirak Choun \and Nguyen Ho}
 \date{}
 
@@ -40,27 +40,27 @@
 
 \subsection{Problem Domain and Motivation}
 
-Static program analysis examines program behavior without execution, 
-helping detect programming errors such as unreachable code. Cassieri et al. (2022) found 
-that developers continued modifying unused or unreachable methods, highlighting the maintenance costs of dead code \cite{paper1}.
+Static program analysis detects programming issues without executing code.
+Cassieri et al. (2022) found that developers continued modifying unused or
+unreachable methods, highlighting the maintenance costs of dead code
+\cite{paper1}.
 
-However, understanding the causes of programming errors can be challenging. 
-Chou et al. (2011) proposed a technique for diagnosing unreachable code in 
-hardware verification and suggesting possible fixes \cite{paper2}. Similarly, Feng et 
-al. (2026) demonstrated the importance of analyzing execution-path constraints to determine whether vulnerable code is reachable \cite{source3}.
+Beyond detection, understanding why issues occur is important. Feng et al.
+(2026) showed the importance of execution-path constraints in determining
+whether vulnerable code is reachable \cite{source3}.
 
-Motivated by these studies, we propose \textbf{PyEye}, an explainable static 
-analyzer for a restricted Python-like language. PyEye aims to detect common issues, 
-including unused and undefined variables, unused parameters and functions, duplicate declarations, 
-and incorrect function argument counts. It will provide clear, human-readable diagnostics explaining 
-detected issues and their causes, with unreachable-code detection and more advanced analyses as additional goals.
+These studies motivate \textbf{Alphalyzer}, a static analyzer for our small
+programming language, \textbf{Alpha}. It will detect unused or undefined
+items, duplicate declarations, and incorrect argument counts, with clear
+diagnostics explaining each issue. Further goals include unreachable-code
+detection and more advanced analyses.
 
 \subsection{Proposed Language}
-We propose a toy language for writing programs with integer and boolean
-expressions, conditional execution, loops, and functions. The language
-supports two types: Integers and Booleans.
+\label{sec:proposed-language}
+We propose a language for writing programs with integer and boolean expressions,
+conditional execution, loops, and functions. The language supports Integers and
+Booleans, and the following operations:
 
-\subsubsection{Operators}
 \begin{itemize}
     \setlength{\itemsep}{0pt}
     \item Arithmetic: \texttt{+}, \texttt{-}, \texttt{*}, \texttt{/},
@@ -70,87 +70,87 @@ supports two types: Integers and Booleans.
     \item Boolean: \texttt{!} (NOT), \texttt{\&} (AND), and \texttt{|} (OR).
 \end{itemize}
 
-\subsubsection{Language Constructs}
 Programs use \texttt{if}--\texttt{else} for conditional execution and
 \texttt{loop} with \texttt{break} for repetition. The language does not
 include \texttt{while} or \texttt{for} loops.
 
-The language supports functions, but nested function definitions are not allowed.
-Each function has its own scope. Variable lookup first searches the current function's
-scope and then the global scope. If a variable is not found in either scope, execution
-produces a runtime error.
+The language supports functions, but nested function definitions are not
+allowed. Each function has its own scope. Variable lookup first searches
+the current function's scope and then the global scope. If a variable is
+not found in either scope, execution produces a runtime error.
 
 \subsection{Proposed Tool}
-
-PyEye will be a static analysis tool for our small Python-like
-programming language. It will examine source code without executing
-it and identify common programming errors. The project will also
-include a basic interpreter to execute valid programs.
-
-The static analyzer will support five main features as minimum
-requirements:
-
-\begin{itemize}
-    \item \textbf{Unused variables:}
-    Detect variables that are declared but never read.
-
-    \item \textbf{Duplicate declarations:}
-    Detect variables that are declared more than once in the
-    same scope.
-
-    \item \textbf{Immutable variable reassignment:}
-    Detect attempts to modify variables declared using
-    \texttt{let}.
-
-    \item \textbf{Unused functions:}
-    Detect functions that are defined but never called,
-    excluding the \texttt{main} function.
-
-    \item \textbf{Unreachable code:}
-    Detect statements that appear after an unconditional
-    \texttt{yeet} statement within the same block.
-\end{itemize}
-
-The tool will take PyEye source code as input. It will parse
-the code into an Abstract Syntax Tree (AST) and analyze the
-program using symbol tables, AST traversal, and basic
-control-flow analysis.
-
-For each detected issue, the tool will report its location,
-the type of issue, and a short explanation of why it occurs.
-Errors will indicate invalid programs, while warnings will
-identify potential problems such as unused variables or
-functions.
-
-The interpreter will execute PyEye programs according to
-the language rules defined in Section~\ref{sec:proposed-language}.
-
+Alphalyzer will analyze Alpha source code without executing it to identify
+common programming errors, reporting each issue's location, type, and a
+short description. The project will also include an interpreter to execute
+Alpha programs according to the language rules defined in
+Section~\ref{sec:proposed-language}.
 
 \subsection{Scope and Related Work}
-- Muthuraman et al. (2026) reviewed 146 research papers on techniques for optimizing static analysis,
-highlighting how existing research focuses on improving execution speed, memory usage, and precision.
-While these aspects are important, PyEye takes a different approach by focusing on providing consistent,
-understandable diagnostics that explains the issues detected in source code.
+Muthuraman et al. (2026) reviewed 146 papers on optimizing static analysis
+for speed, memory usage, and precision. Alphalyzer focuses on diagnostic
+clarity, providing consistent, understandable explanations of issues in
+Alpha programs.
 
-- Similarly, Chou et al. (2011) proposed advanced techniques for diagnosing unreachable code in hardware verification.
-Their research highlights the importance of identifying and explaining why certain code cannot be executed, rather than
-simply detecting it. This motivates PyEye's goal of providing explanations for detected programming issues, including
-unreachable statements as a target feature. Unlike their approach, PyEye focuses on simpler static-analysis techniques
-for a restricted Python-like language.  
+Chou et al. (2011) proposed techniques for diagnosing unreachable code in
+hardware verification \cite{paper2}. Their work motivates Alphalyzer's goal
+of explaining why issues occur, including why statements cannot execute.
+Alphalyzer pursues this goal through simpler static-analysis techniques
+tailored to Alpha.
 
 \section{Goals}
+\label{sec:goals}
 
 \subsection{Minimum Goal}
-\placeholder{Describe the smallest working language and tool you commit to
-deliver. Identify essential constructs and tool capabilities.}
+Our minimum goal is a working Alpha interpreter supporting variables,
+expressions, conditionals, and loops, with functions possibly deferred.
+Error reports will include source line numbers and explanations.
+Alphalyzer will support the following checks:
+
+\begin{itemize}
+    \item \textbf{Syntax errors:}
+    Detect invalid syntax.
+
+    \item \textbf{Undefined items:}
+    Detect uses of undeclared variables and functions.
+
+    \item \textbf{Unused items:}
+    Detect variables and functions that are declared but never read.
+
+\end{itemize}
 
 \subsection{Target Goal}
-\placeholder{Describe the planned deliverable, including the important
-features beyond the minimum goal.}
+Our target goal adds function definitions and calls to the interpreter.
+We will also convert the abstract syntax tree (AST) into a control flow
+graph (CFG) to support later analyses.
+Alphalyzer will add the following AST-based checks:
+\begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \item \textbf{Duplicate declarations:}
+    Repeated declarations in the same scope.
+    \item \textbf{Unused parameters:}
+    Function parameters that are never read.
+    \item \textbf{Wrong arity:}
+    Function calls with too few or too many arguments.
+    \item \textbf{Unreachable statements:}
+    Statements after an unconditional \texttt{return} or
+    \texttt{break} in the same block.
+    \item \textbf{Loops without a break:}
+    Loops with no \texttt{break} targeting that loop.
+\end{itemize}
 
 \subsection{Reach Goal}
-\placeholder{Describe optional extensions to pursue if time permits.
-These must not be required for a working project.}
+As a reach goal, we will explore CFG-based checks within functions:
+\begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \item \textbf{Unreachable blocks:}
+    Blocks with no path from the function entry, including code after
+    conditionals whose branches both return.
+    \item \textbf{Possibly uninitialized variables:}
+    Local variables read before assignment on some control-flow path.
+\end{itemize}
+We will also enhance error reports with column numbers and highlighted source
+tokens, and possibly provide suggested fixes.
 
 \section{Theory Part: Syntax and Semantics}
 
@@ -160,8 +160,7 @@ These must not be required for a working project.}
 Our grammar draws on Nystrom's \emph{Crafting
 Interpreters}~\cite{crafting-grammar,crafting-expressions}.
 
-\begin{center}
-\begin{BVerbatim}[fontsize=\small,baselinestretch=0.95]
+\begin{Verbatim}[fontsize=\footnotesize,baselinestretch=0.95]
 <prog>           ::= <stmt>*
 <stmt>           ::= <block-stmt> | <func-stmt>
 <block>          ::= "{" <block-stmt>* "}"
@@ -176,9 +175,11 @@ Interpreters}~\cite{crafting-grammar,crafting-expressions}.
 <func-stmt>      ::= "fun" IDENT "(" <param>? ")" <block>
 <param>          ::= IDENT ("," IDENT)*
 <return-stmt>    ::= "return" <expr>? ";"
+<expr-stmt>      ::= <expr> ";"
+\end{Verbatim}
+\begin{Verbatim}[fontsize=\footnotesize,baselinestretch=0.95]
 <call-expr>      ::= IDENT "(" <args>? ")"
 <args>           ::= <expr> ("," <expr>)*
-<expr-stmt>      ::= <expr> ";"
 <expr>           ::= <or>
 <or>             ::= <or> "|" <and> | <and>
 <and>            ::= <and> "&" <equality> | <equality>
@@ -188,43 +189,49 @@ Interpreters}~\cite{crafting-grammar,crafting-expressions}.
 <factor>         ::= <factor> ("*" | "/") <unary> | <unary>
 <unary>          ::= ("!" | "-") <unary> | <primary>
 <primary>        ::= INT | BOOL | IDENT | "(" <expr> ")" | <call-expr>
-\end{BVerbatim}
-\end{center}
-\bigskip
+\end{Verbatim}
 \noindent\textbf{Note:} The implementation will restrict \texttt{break}
 to loops and \texttt{return} to functions. Scanning will skip whitespace
 and \texttt{//} line comments, which are omitted from the grammar.
 
 \subsubsection{Example Programs}
-\noindent\begin{minipage}[t]{0.49\linewidth}
-\textbf{Expressions and Variables}
+\noindent\begin{minipage}[t]{0.32\linewidth}
 \begin{Verbatim}[fontsize=\small]
+// Expressions
+// Variables
 let a = 0;
 let b;
 b = a + 1;
-let ready = (b >= 1) & true | false;
+let ready = (b >= 1)
+  & true | false;
 \end{Verbatim}
-
-\medskip
-\textbf{Control Flow}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}
 \begin{Verbatim}[fontsize=\small]
+// Control Flow
 fun sum(n) {
   let i = 0;
   loop {
-    if (i >= n) { break; }
-    else { i = i + 1; }
+    if (i >= n) {
+      break;
+    } else {
+      i = i + 1;
+    }
   }
   return i;
 }
 \end{Verbatim}
 \end{minipage}\hfill
-\begin{minipage}[t]{0.47\linewidth}
-\textbf{Functions and Scope}
+\begin{minipage}[t]{0.32\linewidth}
 \begin{Verbatim}[fontsize=\small]
+// Functions and Scope
 let g = 10;
-fun foo(a, b) { g = a + b; }
+fun foo(a, b) {
+  g = a + b;
+}
 fun main() {
-  foo(1, 2); // g is now 3
+  foo(1, 2);
+  // g is now 3
 }
 \end{Verbatim}
 \end{minipage}
@@ -251,9 +258,8 @@ will be implemented in Rust.
 We will build the lexer, parser, interpreter, and static analyses from scratch.
 Supporting Rust libraries will reduce boilerplate: \texttt{thiserror} and/or
 \texttt{color\_eyre} for error handling, \texttt{clap} for command-line
-interfaces, and \texttt{rstest} for parameterized tests. As a reach goal,
-we may use \texttt{miette} to display diagnostics with source locations
-highlighted.
+interfaces, and \texttt{rstest} for parameterized tests. As a reach goal, we may
+use \texttt{miette} to display diagnostics with source locations highlighted.
 
 \subsection{Architecture of the Code}
 The interpreter and static analyzer share a frontend that parses source code
@@ -263,10 +269,10 @@ into an abstract syntax tree (AST), as shown below.
 \begin{tikzpicture}[
     font=\footnotesize,
     process/.style={draw, rounded corners, fill=blue!7,
-                    minimum width=1.1cm, minimum height=0.7cm,
+                    minimum width=0.4331in, minimum height=0.2756in,
                     inner xsep=2pt, align=center},
     data/.style={inner xsep=2pt, align=center},
-    flow/.style={-{Stealth[length=2mm,width=1.4mm]}, thick}
+    flow/.style={-{Stealth[length=0.0787in,width=0.0551in]}, thick}
 ]
 \node[data] (source) at (0,0) {Source\\code};
 \node[process] (lexer) at (1.6,0) {Lexer};
@@ -292,7 +298,7 @@ into an abstract syntax tree (AST), as shown below.
 \draw[flow] (ast.east) -- (5.8,0) |- (builder.west);
 
 \begin{scope}[on background layer]
-\node[draw=gray, dashed, rounded corners, inner sep=0.25cm,
+\node[draw=gray, dashed, rounded corners, inner sep=0.0984in,
       fit=(checks)(astdiag)(builder)(dfa)(dfadiag),
       label={[font=\small]below:Static analyzer}] {};
 \end{scope}
@@ -329,12 +335,13 @@ src/
 features and components that are out of scope.}
 
 \subsection{Challenges}
-Our main challenge is implementing control flow graph (CFG) construction and
-data flow analysis (DFA), as we need to fill gaps in our knowledge of these
-areas. The initial implementation may have limitations in code quality and
-performance, but we will prioritize correctness over optimization.
-\bigskip
-\placeholder{Expand the challenges and fallback plans after group discussion.}
+Our main challenge is implementing control flow graphs and data flow
+analysis, as we are still developing our understanding of these techniques.
+Incorrect handling of branches, loops, or function calls could lead to
+missed issues or false warnings. If advanced analyses prove too difficult,
+we will focus on reliable AST-based checks and clear error reports, as
+described in Section~\ref{sec:goals}.
+
 
 \section{Collaboration Plan}
 
@@ -359,20 +366,20 @@ Nguyen Ho & Static analyzer: AST checks, CFG builder, data flow analysis \\
 
 \subsection{Meetings and Communication}
 We will meet twice a week (Mondays and Wednesdays) and use our WhatsApp
-group day to day. Code lives in a shared GitHub repository, with feature branches,
-pull requests and GitHub issues for tasks.
+group day to day. Code lives in a shared GitHub repository.
 
 \subsection{Weekly Timeline}
 
 \begin{center}
-\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\small
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.3in}@{}}
 \toprule
-Week / dates & Components and deliverables & Owners / dependencies \\
+Dates & Deliverables & Owners / dependencies \\
 \midrule
-Nov 13--19 & Shared AST and diagnostic types; expression parsing and evaluation; CFG design & All, then each owner \\
-Nov 20--26 & Control flow in parser and interpreter; AST checks and CFG builder; minimum goal for the presentation & All depend on the parser \\
-Nov 27--Dec 3 & Functions and scoping; data flow analysis; line-number diagnostics (target goal) & Chang, Nguyen; Nirak on tests \\
-Dec 4--11 & Testing, reach goal if time permits, formal semantics, final report (Dec 11) & All \\
+Nov 13--19 & Shared AST and diagnostics; expression parsing and evaluation; CFG design & All, then each owner \\
+Nov 20--26 & Parse and execute control flow; AST checks; CFG builder; minimum-goal presentation & All; parser required \\
+Nov 27--Dec 3 & Functions and scopes; data flow analysis; line-number diagnostics & Chang, Nguyen; Nirak: tests \\
+Dec 4--11 & Testing; optional reach goals; formal semantics; final report (Dec 11) & All \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -380,15 +387,15 @@ Dec 4--11 & Testing, reach goal if time permits, formal semantics, final report 
 \subsection{Commitment Statements}
 % Each member should personally sign their statement before submission.
 \noindent I commit to work and contribute equally to this project.
-\\Name: Chang Nguyen \qquad Signature: \underline{\hspace{1.2in}}
+\\\makebox[0.5in][l]{Name:}\makebox[1.2in][l]{Chang Nguyen}Signature: \underline{\hspace{1.2in}}
 
 \medskip
 \noindent I commit to work and contribute equally to this project.
-\\Name: Nirak Choun \qquad Signature: \underline{\hspace{1.2in}}
+\\\makebox[0.5in][l]{Name:}\makebox[1.2in][l]{Nirak Choun}Signature: \underline{\hspace{1.2in}}
 
 \medskip
 \noindent I commit to work and contribute equally to this project.
-\\Name: Nguyen Ho \qquad Signature: \underline{\hspace{1.2in}}
+\\\makebox[0.5in][l]{Name:}\makebox[1.2in][l]{Nguyen Ho}Signature: \underline{\hspace{1.2in}}
 
 \section{Conclusion and Questions for Feedback}
 If the project succeeds, one frontend will feed both an interpreter that runs
@@ -404,24 +411,11 @@ the analyzer be sound, or is a best-effort analysis with documented limits
 acceptable? (3) Which style of formal semantics do you expect in the final
 report?
 
-% Mandatory: replace these placeholders with at least three real sources,
-% including at least two research papers, and cite them in the text.
 \renewcommand{\refname}{References Cited}
-\begin{thebibliography}{9}
+\begingroup
 \raggedright
-\bibitem{paper1}
-[TODO: Research paper 1 --- authors, title, venue, year, and DOI or URL.]
-
-\bibitem{paper2}
-[TODO: Research paper 2 --- authors, title, venue, year, and DOI or URL.]
-
-\bibitem{crafting-grammar}
-Robert Nystrom. ``Appendix I: Grammar.'' \emph{Crafting Interpreters}.
-\url{https://craftinginterpreters.com/appendix-i.html}.
-
-\bibitem{crafting-expressions}
-Robert Nystrom. ``Parsing Expressions.'' \emph{Crafting Interpreters}.
-\url{https://craftinginterpreters.com/parsing-expressions.html}.
-\end{thebibliography}
+\bibliographystyle{plain}
+\bibliography{citation}
+\endgroup
 
 \end{document}
