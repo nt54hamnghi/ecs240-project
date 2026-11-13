@@ -321,48 +321,56 @@ src/
 |-- parser.rs               # Tokens to AST
 |-- ast.rs                  # AST types
 |-- errors.rs               # Error reporting and diagnostics
-`-- bin/
+|-- bin/
     |-- interpreter/
     |   |-- main.rs         # REPL and file execution
-    |   `-- exec.rs         # AST execution and runtime state
-    `-- analyzer/
+    |   |-- exec.rs         # AST execution and runtime state
+    |-- analyzer/
         |-- main.rs         # Runs checks and reports diagnostics
         |-- cfg.rs          # Control flow graph builder and analysis
 \end{BVerbatim}
 \end{center}
 
-\placeholder{Map the work to minimum, target, and reach goals, and list
-features and components that are out of scope.}
-
 \subsection{Challenges}
-Our main challenge is implementing control flow graphs and data flow
-analysis, as we are still developing our understanding of these techniques.
-Incorrect handling of branches, loops, or function calls could lead to
-missed issues or false warnings. If advanced analyses prove too difficult,
-we will focus on reliable AST-based checks and clear error reports, as
-described in Section~\ref{sec:goals}.
+Our main challenge is implementing CFGs and data flow analysis, which are new
+to us. Mishandling branches, loops, or function calls could cause missed issues
+or false warnings. If these analyses prove too difficult, we will prioritize
+reliable AST-based checks and clear diagnostics (Section~\ref{sec:goals}).
 
+Another challenge is ensuring consistency between the interpreter and static
+analyzer. Both components must follow the same semantics, particularly when
+handling variable scopes, function calls, and control flow. Inconsistencies
+could cause the analyzer to report errors for programs that the interpreter
+considers valid.
 
 \section{Collaboration Plan}
 
 \subsection{Division of Work}
-Each member owns one component behind the shared AST, so the parts can be
-built in parallel. We will fix the AST and diagnostic types first; later
-changes to them go through a pull request reviewed by another member. Each
-member tests their own component, and shared example programs run through
-both tools.
+Each team member will contribute to all stages of the pipeline, with work
+divided by feature or subcomponent. Members are responsible for implementing
+and testing their assigned portions, which are then reviewed by other team
+members. Code sharing and reviews will be coordinated through GitHub pull
+requests.
 
 \begin{center}
-\begin{tabularx}{\linewidth}{@{}lX@{}}
+\small
+\begin{tabularx}{\linewidth}{@{}l*{4}{>{\raggedright\arraybackslash}X}@{}}
 \toprule
-Group member & Responsibilities \\
+Member & Lexing & Parsing & Interpreting & Analysis \\
 \midrule
-Chang Nguyen & Interpreter: execution, scopes, function calls, REPL \\
-Nirak Choun & Frontend: lexer, parser, AST types \\
-Nguyen Ho & Static analyzer: AST checks, CFG builder, data flow analysis \\
+Nirak Choun & Keywords, symbols, literals & AST types and structure & Runtime values, environments, scopes & AST checks, CFG reachability \\
+\midrule
+Chang Nguyen & Expressions & Expressions & Statements & AST checks, CFG branches \\
+\midrule
+Nguyen Ho & Statements & Statements & Expressions, function calls & AST checks, CFG structure and loops \\
 \bottomrule
 \end{tabularx}
 \end{center}
+
+This division gives every member exposure to each stage of the pipeline.
+Supporting components, including the CLI, REPL, and error reporting, will be
+divided among members later, as our initial focus is on lexing through
+interpreting.
 
 \subsection{Meetings and Communication}
 We will meet twice a week (Mondays and Wednesdays) and use our WhatsApp
@@ -372,14 +380,17 @@ group day to day. Code lives in a shared GitHub repository.
 
 \begin{center}
 \small
-\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.3in}@{}}
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X@{}}
 \toprule
-Dates & Deliverables & Owners / dependencies \\
+Dates & Deliverables \\
 \midrule
-Nov 13--19 & Shared AST and diagnostics; expression parsing and evaluation; CFG design & All, then each owner \\
-Nov 20--26 & Parse and execute control flow; AST checks; CFG builder; minimum-goal presentation & All; parser required \\
-Nov 27--Dec 3 & Functions and scopes; data flow analysis; line-number diagnostics & Chang, Nguyen; Nirak: tests \\
-Dec 4--11 & Testing; optional reach goals; formal semantics; final report (Dec 11) & All \\
+Nov 13--19 & Define AST and runtime interfaces; implement lexer, expression parsing, and basic evaluation \\
+\midrule
+Nov 20--26 & Integrate variables, conditionals, and loops; add syntax, undefined-item, and unused-item diagnostics; minimum-goal presentation \\
+\midrule
+Nov 27--Dec 3 & Complete functions and scopes, remaining AST checks, and CFG construction and reachability checks \\
+\midrule
+Dec 4--11 & Integration testing and fixes; formal semantics and final report (Dec 11); optional data flow analysis and richer diagnostics if time permits \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -398,18 +409,15 @@ Dec 4--11 & Testing; optional reach goals; formal semantics; final report (Dec 1
 \\\makebox[0.5in][l]{Name:}\makebox[1.2in][l]{Nguyen Ho}Signature: \underline{\hspace{1.2in}}
 
 \section{Conclusion and Questions for Feedback}
-If the project succeeds, one frontend will feed both an interpreter that runs
-programs and a static analyzer that reports errors before they run. The two
-tools check each other: comparing the analyzer's predictions with the
-interpreter's actual behavior on each test program shows where the analysis
-is correct, too cautious or wrong. Building the CFG and data flow analysis
-ourselves also teaches the techniques that real compilers and linters use.
+The project will combine a shared frontend, an interpreter, and a static
+analyzer. Comparing analysis results with runtime behavior on test programs
+will help evaluate diagnostic accuracy. Building the CFG and exploring data
+flow analysis will give us experience with techniques used in compilers and
+linters.
 
-Questions for feedback: (1) Is an interpreter plus a CFG-based analyzer with
-one or two data flow analyses the right scope for three people? (2) Should
-the analyzer be sound, or is a best-effort analysis with documented limits
-acceptable? (3) Which style of formal semantics do you expect in the final
-report?
+Questions for feedback: (1) Is this scope reasonable for three people?
+(2) Is best-effort analysis with documented limits acceptable? (3) Which
+style of formal semantics is expected in the final report?
 
 \renewcommand{\refname}{References Cited}
 \begingroup
