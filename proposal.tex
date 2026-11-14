@@ -158,7 +158,9 @@ tokens, and possibly provide suggested fixes.
 
 \subsubsection{Syntax}
 Our grammar draws on Nystrom's \emph{Crafting
-Interpreters}~\cite{crafting-grammar,crafting-expressions}.
+Interpreters}~\cite{crafting-grammar,crafting-expressions} and
+M{\o}ller and Schwartzbach's \emph{Static Program
+Analysis}~\cite{moller-schwartzbach-spa}.
 
 \begin{Verbatim}[fontsize=\footnotesize,baselinestretch=0.95]
 <prog>           ::= <stmt>*
@@ -167,7 +169,7 @@ Interpreters}~\cite{crafting-grammar,crafting-expressions}.
 <block-stmt>     ::= <let-stmt> | <assign-stmt> | <if-stmt>
                   | <loop-stmt> | <break-stmt> | <return-stmt>
                   | <expr-stmt>
-<let-stmt>       ::= "let" IDENT ("=" <expr>)? ";"
+<let-stmt>       ::= "let" IDENT (("," IDENT)* | "=" <expr>) ";"
 <assign-stmt>    ::= IDENT "=" <expr> ";"
 <if-stmt>        ::= "if" "(" <expr> ")" <block> ("else" <block>)?
 <loop-stmt>      ::= "loop" <block>
