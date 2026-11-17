@@ -52,6 +52,8 @@ pub enum TokenKind {
     Ident,
 
     // Keywords.
+    True,
+    False,
     Let,
     If,
     Else,
