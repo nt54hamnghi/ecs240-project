@@ -22,15 +22,14 @@ impl<'src> Lexer<'src> {
         }
     }
 
-    /// Creates a token from the source text in the byte range `start..end`.
-    fn make_token(&self, kind: TokenKind, start: usize, end: usize) -> Token<'src> {
+    fn make_token_range(&self, kind: TokenKind, start: usize, end: usize) -> Token<'src> {
         assert!(start < end);
         Token::new(&self.source[start..end], kind, self.line)
     }
 
     /// Creates a single-character symbol token at the given byte index.
-    fn make_symbol(&self, kind: TokenKind, idx: usize) -> Token<'src> {
-        self.make_token(kind, idx, idx + 1)
+    fn make_token_len(&self, kind: TokenKind, start: usize, len: usize) -> Token<'src> {
+        self.make_token_range(kind, start, start + len)
     }
 
     fn integer(&mut self) -> Token<'src> {
@@ -48,22 +47,34 @@ impl<'src> Iterator for Lexer<'src> {
     fn next(&mut self) -> Option<Self::Item> {
         let (idx, ch) = self.inner.next()?;
         let token = match ch {
-            '(' => self.make_symbol(TokenKind::LeftParen, idx),
-            ')' => self.make_symbol(TokenKind::RightParen, idx),
-            '{' => self.make_symbol(TokenKind::LeftBrace, idx),
-            '}' => self.make_symbol(TokenKind::RightBrace, idx),
-            ',' => self.make_symbol(TokenKind::Comma, idx),
-            ';' => self.make_symbol(TokenKind::Semicolon, idx),
-            '&' => self.make_symbol(TokenKind::Ampersand, idx),
-            '|' => self.make_symbol(TokenKind::Pipe, idx),
-            '+' => self.make_symbol(TokenKind::Plus, idx),
-            '-' => self.make_symbol(TokenKind::Minus, idx),
-            '*' => self.make_symbol(TokenKind::Star, idx),
+            '(' => self.make_token_len(TokenKind::LeftParen, idx, 1),
+            ')' => self.make_token_len(TokenKind::RightParen, idx, 1),
+            '{' => self.make_token_len(TokenKind::LeftBrace, idx, 1),
+            '}' => self.make_token_len(TokenKind::RightBrace, idx, 1),
+            ',' => self.make_token_len(TokenKind::Comma, idx, 1),
+            ';' => self.make_token_len(TokenKind::Semicolon, idx, 1),
+            '&' => self.make_token_len(TokenKind::Ampersand, idx, 1),
+            '|' => self.make_token_len(TokenKind::Pipe, idx, 1),
+            '+' => self.make_token_len(TokenKind::Plus, idx, 1),
+            '-' => self.make_token_len(TokenKind::Minus, idx, 1),
+            '*' => self.make_token_len(TokenKind::Star, idx, 1),
             '/' => todo!("division or // line comment"),
-            '!' => todo!("! or !="),
-            '=' => todo!("= or =="),
-            '>' => todo!("> or >="),
-            '<' => todo!("< or <="),
+            '!' => match self.inner.next_if(|(_, c)| *c == '=') {
+                Some(_) => self.make_token_len(TokenKind::BangEqual, idx, 2),
+                None => self.make_token_len(TokenKind::Bang, idx, 1),
+            },
+            '=' => match self.inner.next_if(|(_, c)| *c == '=') {
+                Some(_) => self.make_token_len(TokenKind::EqualEqual, idx, 2),
+                None => self.make_token_len(TokenKind::Equal, idx, 1),
+            },
+            '>' => match self.inner.next_if(|(_, c)| *c == '=') {
+                Some(_) => self.make_token_len(TokenKind::GreaterEqual, idx, 2),
+                None => self.make_token_len(TokenKind::Greater, idx, 1),
+            },
+            '<' => match self.inner.next_if(|(_, c)| *c == '=') {
+                Some(_) => self.make_token_len(TokenKind::LessEqual, idx, 2),
+                None => self.make_token_len(TokenKind::Less, idx, 1),
+            },
             ' ' | '\t' | '\r' => return self.next(),
             '\n' => todo!("advance line number"),
             '0'..='9' => self.integer(),
@@ -92,6 +103,14 @@ mod tests {
     #[case::plus("+", TokenKind::Plus)]
     #[case::minus("-", TokenKind::Minus)]
     #[case::star("*", TokenKind::Star)]
+    #[case::bang("!", TokenKind::Bang)]
+    #[case::bang_equal("!=", TokenKind::BangEqual)]
+    #[case::equal("=", TokenKind::Equal)]
+    #[case::equal_equal("==", TokenKind::EqualEqual)]
+    #[case::greater(">", TokenKind::Greater)]
+    #[case::greater_equal(">=", TokenKind::GreaterEqual)]
+    #[case::less("<", TokenKind::Less)]
+    #[case::less_equal("<=", TokenKind::LessEqual)]
     fn yields_symbol_tokens(#[case] symbol: &str, #[case] kind: TokenKind) {
         let mut lexer = Lexer::new(symbol);
 
