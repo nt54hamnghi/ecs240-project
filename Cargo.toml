@@ -1,6 +1,17 @@
 [package]
-name = "project"
+name = "alpha-lang"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+clap = { version = "4.6.8", features = ["derive"] }
+color-eyre = "0.6.5"
+thiserror = "2.0.21"
+
+[dev-dependencies]
+rstest = "0.28.0"
+
+[lints.rust]
+# allow unused during development, will restrict later
+unused = { priority = 0, level = "allow" }
+unsafe_code = { priority = 5, level = "forbid" }
