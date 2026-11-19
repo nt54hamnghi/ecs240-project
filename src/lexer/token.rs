@@ -50,6 +50,7 @@ pub enum TokenKind {
     // Identifiers and literals; values belong to the token, not its category.
     /// An identifier (`IDENT`).
     Ident,
+    Integer
 
     // Keywords.
     True,
