@@ -76,7 +76,10 @@ impl<'src> Iterator for Lexer<'src> {
                 None => self.make_token_len(TokenKind::Less, idx, 1),
             },
             ' ' | '\t' | '\r' => return self.next(),
-            '\n' => todo!("advance line number"),
+            '\n' => {
+                self.line += 1;
+                return self.next();
+            }
             '0'..='9' => self.integer(),
             'a'..='z' | 'A'..='Z' | '_' => self.ident(),
             _ => todo!("unexpected character"),
@@ -140,6 +143,18 @@ mod tests {
             vec![
                 Token::new("+", TokenKind::Plus, 1),
                 Token::new("-", TokenKind::Minus, 1),
+            ]
+        );
+    }
+
+    #[test]
+    fn advances_line_number_on_newline() {
+        let tokens: Vec<_> = Lexer::new("+\n\n-").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new("+", TokenKind::Plus, 1),
+                Token::new("-", TokenKind::Minus, 3),
             ]
         );
     }
