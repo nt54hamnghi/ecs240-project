@@ -58,7 +58,13 @@ impl<'src> Iterator for Lexer<'src> {
             '+' => self.make_token_len(TokenKind::Plus, idx, 1),
             '-' => self.make_token_len(TokenKind::Minus, idx, 1),
             '*' => self.make_token_len(TokenKind::Star, idx, 1),
-            '/' => todo!("division or // line comment"),
+            '/' => match self.inner.next_if(|(_, c)| *c == '/') {
+                Some(_) => {
+                    while self.inner.next_if(|(_, c)| *c != '\n').is_some() {}
+                    return self.next();
+                }
+                None => self.make_token_len(TokenKind::Slash, idx, 1),
+            },
             '!' => match self.inner.next_if(|(_, c)| *c == '=') {
                 Some(_) => self.make_token_len(TokenKind::BangEqual, idx, 2),
                 None => self.make_token_len(TokenKind::Bang, idx, 1),
@@ -155,6 +161,32 @@ mod tests {
             vec![
                 Token::new("+", TokenKind::Plus, 1),
                 Token::new("-", TokenKind::Minus, 3),
+            ]
+        );
+    }
+
+    #[test]
+    fn yields_slash() {
+        let mut lexer = Lexer::new("/");
+        assert_eq!(lexer.next(), Some(Token::new("/", TokenKind::Slash, 1)));
+        assert_eq!(lexer.next(), None);
+    }
+
+    #[rstest]
+    #[case::only_comment("// a comment")]
+    #[case::empty_comment("//")]
+    fn skips_line_comment_at_end_of_input(#[case] source: &str) {
+        assert_eq!(Lexer::new(source).next(), None);
+    }
+
+    #[test]
+    fn comment_ends_at_newline_and_counts_the_line() {
+        let tokens: Vec<_> = Lexer::new("+ // comment\n-").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new("+", TokenKind::Plus, 1),
+                Token::new("-", TokenKind::Minus, 2),
             ]
         );
     }
