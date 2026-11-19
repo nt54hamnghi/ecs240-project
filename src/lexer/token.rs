@@ -62,6 +62,9 @@ pub enum TokenKind {
     Fun,
     Return,
 
+    /// A character the lexer does not recognize; the lexeme is that character.
+    Error,
+
     /// End of input.
     Eof,
 }

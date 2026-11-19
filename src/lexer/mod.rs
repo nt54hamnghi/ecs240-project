@@ -88,7 +88,7 @@ impl<'src> Iterator for Lexer<'src> {
             }
             '0'..='9' => self.integer(),
             'a'..='z' | 'A'..='Z' | '_' => self.ident(),
-            _ => todo!("unexpected character"),
+            _ => self.make_token_len(TokenKind::Error, idx, ch.len_utf8()),
         };
 
         Some(token)
@@ -189,6 +189,16 @@ mod tests {
                 Token::new("-", TokenKind::Minus, 2),
             ]
         );
+    }
+
+    #[rstest]
+    #[case::ascii("$")]
+    #[case::non_ascii("é")]
+    #[case::emoji("🦀")]
+    fn yields_error_token_for_unexpected_character(#[case] source: &str) {
+        let mut lexer = Lexer::new(source);
+        assert_eq!(lexer.next(), Some(Token::new(source, TokenKind::Error, 1)));
+        assert_eq!(lexer.next(), None);
     }
 
     #[rstest]
