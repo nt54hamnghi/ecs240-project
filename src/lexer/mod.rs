@@ -6,7 +6,7 @@ use crate::error::AlphaError;
 use crate::error::Located;
 use crate::lexer::token::{Token, TokenKind};
 
-mod token;
+pub mod token;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
