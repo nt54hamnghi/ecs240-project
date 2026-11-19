@@ -58,10 +58,10 @@ impl<'src> Lexer<'src> {
         self.make_token_range(TokenKind::Integer, start, end)
     }
 
-    fn ident(&mut self) -> Token<'src> {
+    fn ident(&mut self, start: usize) -> Token<'src> {
         // Get consecutive letters and "_" to create a token
         while let Some(&(_, ch)) = self.inner.peek() {
-            if ('a'..='z').contains(&ch) || ('A'..='Z').contains(&ch) || ch == "_" {
+            if ch.is_ascii_alphanumeric() || ch == '_' {
                 self.inner.next();
             }
             else {
@@ -77,6 +77,9 @@ impl<'src> Lexer<'src> {
             // If it is nothing, set the end index to the length of the source string
             None => self.source.len(),
         }
+      
+        // Create a token of Ident
+        self.make_token_range(TokenKind::Ident, start, end)
     }
 }
 
@@ -98,7 +101,13 @@ impl<'src> Iterator for Lexer<'src> {
             '+' => self.make_token_len(TokenKind::Plus, idx, 1),
             '-' => self.make_token_len(TokenKind::Minus, idx, 1),
             '*' => self.make_token_len(TokenKind::Star, idx, 1),
-            '/' => todo!("division or // line comment"),
+            '/' => match self.inner.next_if(|(_, c)| *c == '/') {
+                Some(_) => {
+                    while self.inner.next_if(|(_, c)| *c != '\n').is_some() {}
+                    return self.next();
+                }
+                None => self.make_token_len(TokenKind::Slash, idx, 1),
+            },
             '!' => match self.inner.next_if(|(_, c)| *c == '=') {
                 Some(_) => self.make_token_len(TokenKind::BangEqual, idx, 2),
                 None => self.make_token_len(TokenKind::Bang, idx, 1),
@@ -116,10 +125,13 @@ impl<'src> Iterator for Lexer<'src> {
                 None => self.make_token_len(TokenKind::Less, idx, 1),
             },
             ' ' | '\t' | '\r' => return self.next(),
-            '\n' => todo!("advance line number"),
+            '\n' => {
+                self.line += 1;
+                return self.next();
+            }
             '0'..='9' => self.integer(idx),
             'a'..='z' | 'A'..='Z' | '_' => self.ident(idx),
-            _ => todo!("unexpected character"),
+            _ => self.make_token_len(TokenKind::Error, idx, ch.len_utf8()),
         };
 
         Some(token)
@@ -182,6 +194,54 @@ mod tests {
                 Token::new("-", TokenKind::Minus, 1),
             ]
         );
+    }
+
+    #[test]
+    fn advances_line_number_on_newline() {
+        let tokens: Vec<_> = Lexer::new("+\n\n-").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new("+", TokenKind::Plus, 1),
+                Token::new("-", TokenKind::Minus, 3),
+            ]
+        );
+    }
+
+    #[test]
+    fn yields_slash() {
+        let mut lexer = Lexer::new("/");
+        assert_eq!(lexer.next(), Some(Token::new("/", TokenKind::Slash, 1)));
+        assert_eq!(lexer.next(), None);
+    }
+
+    #[rstest]
+    #[case::only_comment("// a comment")]
+    #[case::empty_comment("//")]
+    fn skips_line_comment_at_end_of_input(#[case] source: &str) {
+        assert_eq!(Lexer::new(source).next(), None);
+    }
+
+    #[test]
+    fn comment_ends_at_newline_and_counts_the_line() {
+        let tokens: Vec<_> = Lexer::new("+ // comment\n-").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new("+", TokenKind::Plus, 1),
+                Token::new("-", TokenKind::Minus, 2),
+            ]
+        );
+    }
+
+    #[rstest]
+    #[case::ascii("$")]
+    #[case::non_ascii("é")]
+    #[case::emoji("🦀")]
+    fn yields_error_token_for_unexpected_character(#[case] source: &str) {
+        let mut lexer = Lexer::new(source);
+        assert_eq!(lexer.next(), Some(Token::new(source, TokenKind::Error, 1)));
+        assert_eq!(lexer.next(), None);
     }
 
     #[rstest]
