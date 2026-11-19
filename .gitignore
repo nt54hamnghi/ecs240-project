@@ -2,6 +2,7 @@
 __pycache__
 .hypothesis
 build/
+temp/
 
 # Added by cargo
 /target
