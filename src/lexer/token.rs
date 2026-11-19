@@ -15,6 +15,10 @@ impl<'src> Token<'src> {
         assert!(line > 0, "line numbers start at 1");
         Self { lexeme, kind, line }
     }
+
+    pub const fn new_eof(line: usize) -> Self {
+        Token::new("", TokenKind::Eof, line)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -62,9 +66,6 @@ pub enum TokenKind {
     Integer,
     True,
     False,
-
-    /// A character the lexer does not recognize; the lexeme is that character.
-    Error,
 
     /// End of input.
     Eof,

@@ -1,9 +1,26 @@
+use std::iter::Peekable;
+use std::str::CharIndices;
 use std::str::Chars;
-use std::{iter::Peekable, str::CharIndices};
 
+use crate::error::AlphaError;
+use crate::error::Located;
 use crate::lexer::token::{Token, TokenKind};
 
 mod token;
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("unrecognized input '{0}'")]
+    UnexpectedCharacter(char),
+}
+
+impl AlphaError for Error {
+    fn error_type(&self) -> &'static str {
+        match self {
+            Self::UnexpectedCharacter(_) => "UnexpectedCharacter",
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Lexer<'src> {
@@ -83,14 +100,14 @@ impl<'src> Lexer<'src> {
 }
 
 impl<'src> Iterator for Lexer<'src> {
-    type Item = Token<'src>;
+    type Item = Result<Token<'src>, Located<Error>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let (idx, ch) = match self.inner.next() {
             Some(next) => next,
             None if !self.at_eof => {
                 self.at_eof = true;
-                return Some(Token::new("", TokenKind::Eof, self.line));
+                return Some(Ok(Token::new_eof(self.line)));
             }
             None => return None,
         };
@@ -142,10 +159,13 @@ impl<'src> Iterator for Lexer<'src> {
             }
             '0'..='9' => self.integer(idx),
             'a'..='z' | 'A'..='Z' | '_' => self.ident_or_keyword(idx),
-            _ => self.make_token_len(TokenKind::Error, idx, ch.len_utf8()),
+            c => {
+                let error = Error::UnexpectedCharacter(c).at(self.line, c);
+                return Some(Err(error));
+            }
         };
 
-        Some(token)
+        Some(Ok(token))
     }
 }
 
@@ -161,9 +181,12 @@ mod tests {
     fn yields_eof_once(#[case] source: &str, #[case] line: usize) {
         let mut lexer = Lexer::new(source);
 
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, line)));
-        assert_eq!(lexer.next(), None);
-        assert_eq!(lexer.next(), None);
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, line))
+        );
+        assert!(lexer.next().is_none());
+        assert!(lexer.next().is_none());
     }
 
     #[rstest]
@@ -189,9 +212,15 @@ mod tests {
     fn yields_symbol_tokens(#[case] symbol: &str, #[case] kind: TokenKind) {
         let mut lexer = Lexer::new(symbol);
 
-        assert_eq!(lexer.next(), Some(Token::new(symbol, kind, 1)));
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, 1)));
-        assert_eq!(lexer.next(), None);
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new(symbol, kind, 1))
+        );
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, 1))
+        );
+        assert!(lexer.next().is_none());
     }
 
     #[rstest]
@@ -203,11 +232,14 @@ mod tests {
         let mut lexer = Lexer::new(source);
 
         assert_eq!(
-            lexer.next(),
+            lexer.next().map(Result::unwrap),
             Some(Token::new(source, TokenKind::Integer, 1))
         );
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, 1)));
-        assert_eq!(lexer.next(), None);
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, 1))
+        );
+        assert!(lexer.next().is_none());
     }
 
     #[rstest]
@@ -217,7 +249,10 @@ mod tests {
     fn yields_integer_tokens_excludes_trailing_non_digit(#[case] source: &str) {
         let mut lexer = Lexer::new(source);
 
-        assert_eq!(lexer.next(), Some(Token::new("123", TokenKind::Integer, 1)));
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("123", TokenKind::Integer, 1))
+        );
     }
 
     #[rstest]
@@ -235,9 +270,15 @@ mod tests {
     fn yields_identifier_tokens(#[case] source: &str) {
         let mut lexer = Lexer::new(source);
 
-        assert_eq!(lexer.next(), Some(Token::new(source, TokenKind::Ident, 1)));
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, 1)));
-        assert_eq!(lexer.next(), None);
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new(source, TokenKind::Ident, 1))
+        );
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, 1))
+        );
+        assert!(lexer.next().is_none());
     }
 
     #[rstest]
@@ -253,9 +294,15 @@ mod tests {
     fn yields_keyword_tokens(#[case] source: &str, #[case] kind: TokenKind) {
         let mut lexer = Lexer::new(source);
 
-        assert_eq!(lexer.next(), Some(Token::new(source, kind, 1)));
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, 1)));
-        assert_eq!(lexer.next(), None);
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new(source, kind, 1))
+        );
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, 1))
+        );
+        assert!(lexer.next().is_none());
     }
 
     #[rstest]
@@ -265,8 +312,11 @@ mod tests {
     #[case::mixed(" \t\r")]
     fn skips_whitespace(#[case] whitespace: &str) {
         let mut lexer = Lexer::new(whitespace);
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, 1)));
-        assert_eq!(lexer.next(), None);
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, 1))
+        );
+        assert!(lexer.next().is_none());
     }
 
     #[rstest]
@@ -276,7 +326,7 @@ mod tests {
     #[case::mixed(" \t\r")]
     fn skips_whitespace_around_symbols(#[case] whitespace: &str) {
         let source = format!("{whitespace}+{whitespace}-{whitespace}");
-        let tokens: Vec<_> = Lexer::new(&source).collect();
+        let tokens: Vec<_> = Lexer::new(&source).collect::<Result<Vec<_>, _>>().unwrap();
         assert_eq!(
             tokens,
             vec![
@@ -289,7 +339,7 @@ mod tests {
 
     #[test]
     fn advances_line_number_on_newline() {
-        let tokens: Vec<_> = Lexer::new("+\n\n-").collect();
+        let tokens: Vec<_> = Lexer::new("+\n\n-").collect::<Result<Vec<_>, _>>().unwrap();
         assert_eq!(
             tokens,
             vec![
@@ -303,9 +353,15 @@ mod tests {
     #[test]
     fn yields_slash() {
         let mut lexer = Lexer::new("/");
-        assert_eq!(lexer.next(), Some(Token::new("/", TokenKind::Slash, 1)));
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, 1)));
-        assert_eq!(lexer.next(), None);
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("/", TokenKind::Slash, 1))
+        );
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, 1))
+        );
+        assert!(lexer.next().is_none());
     }
 
     #[rstest]
@@ -313,13 +369,18 @@ mod tests {
     #[case::empty_comment("//")]
     fn skips_line_comment_at_end_of_input(#[case] source: &str) {
         let mut lexer = Lexer::new(source);
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, 1)));
-        assert_eq!(lexer.next(), None);
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, 1))
+        );
+        assert!(lexer.next().is_none());
     }
 
     #[test]
     fn comment_ends_at_newline_and_counts_the_line() {
-        let tokens: Vec<_> = Lexer::new("+ // comment\n-").collect();
+        let tokens: Vec<_> = Lexer::new("+ // comment\n-")
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
         assert_eq!(
             tokens,
             vec![
@@ -334,17 +395,29 @@ mod tests {
     #[case::ascii("$")]
     #[case::non_ascii("é")]
     #[case::emoji("🦀")]
-    fn yields_error_token_for_unexpected_character(#[case] source: &str) {
+    fn yields_error_for_unexpected_character(#[case] source: &str) {
         let mut lexer = Lexer::new(source);
-        assert_eq!(lexer.next(), Some(Token::new(source, TokenKind::Error, 1)));
-        assert_eq!(lexer.next(), Some(Token::new("", TokenKind::Eof, 1)));
-        assert_eq!(lexer.next(), None);
+        let error = lexer.next().unwrap().unwrap_err();
+        let Error::UnexpectedCharacter(character) = error.error;
+        assert_eq!(character.to_string(), source);
+        assert_eq!(
+            error.location,
+            crate::error::ErrorLocation::Token {
+                line: 1,
+                lexeme: source.to_owned(),
+            }
+        );
+        assert_eq!(
+            lexer.next().map(Result::unwrap),
+            Some(Token::new("", TokenKind::Eof, 1))
+        );
+        assert!(lexer.next().is_none());
     }
 
     #[test]
     fn yields_arithmetic_declaration_with_comment() {
         let source = "let count=(12+3)*2/-5; // initial count\n";
-        let tokens: Vec<_> = Lexer::new(source).collect();
+        let tokens: Vec<_> = Lexer::new(source).collect::<Result<Vec<_>, _>>().unwrap();
 
         assert_eq!(
             tokens,
@@ -371,7 +444,7 @@ mod tests {
     #[test]
     fn yields_multiline_boolean_declaration() {
         let source = "let ready = (count >= 1)\n  & !false | true;";
-        let tokens: Vec<_> = Lexer::new(source).collect();
+        let tokens: Vec<_> = Lexer::new(source).collect::<Result<Vec<_>, _>>().unwrap();
 
         assert_eq!(
             tokens,
@@ -398,7 +471,7 @@ mod tests {
     #[test]
     fn yields_function_definition_and_call() {
         let source = "fun add(a, b) {\n  return a+b;\n}\n\nadd(1,2);";
-        let tokens: Vec<_> = Lexer::new(source).collect();
+        let tokens: Vec<_> = Lexer::new(source).collect::<Result<Vec<_>, _>>().unwrap();
 
         assert_eq!(
             tokens,
@@ -433,7 +506,7 @@ mod tests {
     fn yields_loop_with_conditional_break() {
         let source =
             "loop {\n  if (count!=0) {\n    count=count-1;\n  } else {\n    break;\n  }\n}";
-        let tokens: Vec<_> = Lexer::new(source).collect();
+        let tokens: Vec<_> = Lexer::new(source).collect::<Result<Vec<_>, _>>().unwrap();
 
         assert_eq!(
             tokens,
