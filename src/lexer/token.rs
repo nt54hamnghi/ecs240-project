@@ -27,7 +27,7 @@ pub enum TokenKind {
     Comma,
     Semicolon,
 
-    // Arithmetic operators. Minus also represents unary negation.
+    // Arithmetic operators.
     Plus,
     Minus,
     Star,
@@ -47,14 +47,7 @@ pub enum TokenKind {
     Less,
     LessEqual,
 
-    // Identifiers and literals; values belong to the token, not its category.
-    /// An identifier (`IDENT`).
-    Ident,
-    Integer
-
     // Keywords.
-    True,
-    False,
     Let,
     If,
     Else,
@@ -62,6 +55,13 @@ pub enum TokenKind {
     Break,
     Fun,
     Return,
+
+    // Identifiers and literals
+    /// An identifier (`IDENT`).
+    Ident,
+    Integer,
+    True,
+    False,
 
     /// A character the lexer does not recognize; the lexeme is that character.
     Error,
