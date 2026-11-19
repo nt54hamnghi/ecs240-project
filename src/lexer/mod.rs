@@ -7,14 +7,16 @@ mod token;
 
 #[derive(Debug)]
 pub struct Lexer<'src> {
-    source: &'src str,
-    inner: Peekable<CharIndices<'src>>,
-    line: usize,
+    source: &'src str,                      // Stores a reference to the original source code
+    inner: Peekable<CharIndices<'src>>,     // Tracks which character to read next
+                                            // CharIndices returns a Some(&(byte_index, character))
+
+    line: usize,                            // Tracks the current source line, starting at 1
 }
 
 impl<'src> Lexer<'src> {
     pub fn new(source: &'src str) -> Self {
-        let inner = source.char_indices().peekable();
+        let inner = source.char_indices().peekable();   //char_indices creates an itereator, peakable wraps the iterator so you can look at the next char without consuming it. 
         Self {
             source,
             inner,
@@ -32,12 +34,52 @@ impl<'src> Lexer<'src> {
         self.make_token_range(kind, start, start + len)
     }
 
-    fn integer(&mut self) -> Token<'src> {
-        todo!()
+    fn integer(&mut self, start: usize) -> Token<'src> {
+        // Get consecutive digit(s) to create a token
+        while let Some(&(_, ch)) = self.inner.peek() {
+            if ch.is_ascii_digit() {
+                self.inner.next();
+            }
+            else {
+                break;
+            }
+        }
+
+        // Get the end index to extract the whole string
+        let end = match self.inner.peek() {
+            // If it is a character, its start is the end of the previous string, white space is still considered a Some
+            Some(&(idx, _)) => idx,
+
+            // If it is nothing, set the end index to the length of the source string
+            None => self.source.len(),
+        }
+
+        // Create a token of Integer
+        self.make_token_range(TokenKind::Integer, start, end)
     }
 
-    fn ident(&mut self) -> Token<'src> {
-        todo!()
+    fn ident(&mut self, start: usize) -> Token<'src> {
+        // Get consecutive letters and "_" to create a token
+        while let Some(&(_, ch)) = self.inner.peek() {
+            if ch.is_ascii_alphanumeric() || ch == '_' {
+                self.inner.next();
+            }
+            else {
+                break;
+            }
+        }
+
+        // Get the end index to extract the whole thing
+        let end = match self.inner.peek() {
+            // If encountering a character of any kind, its start is the end of the previous string, white space is still considered a Some
+            Some(&(idx, _)) => idx,
+
+            // If it is nothing, set the end index to the length of the source string
+            None => self.source.len(),
+        }
+      
+        // Create a token of Ident
+        self.make_token_range(TokenKind::Ident, start, end)
     }
 }
 
@@ -45,7 +87,8 @@ impl<'src> Iterator for Lexer<'src> {
     type Item = Token<'src>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (idx, ch) = self.inner.next()?;
+        // Get the index and the character if next() returns Some()
+        let (idx, ch) = self.inner.next()?;         
         let token = match ch {
             '(' => self.make_token_len(TokenKind::LeftParen, idx, 1),
             ')' => self.make_token_len(TokenKind::RightParen, idx, 1),
@@ -86,8 +129,8 @@ impl<'src> Iterator for Lexer<'src> {
                 self.line += 1;
                 return self.next();
             }
-            '0'..='9' => self.integer(),
-            'a'..='z' | 'A'..='Z' | '_' => self.ident(),
+            '0'..='9' => self.integer(idx),
+            'a'..='z' | 'A'..='Z' | '_' => self.ident(idx),
             _ => self.make_token_len(TokenKind::Error, idx, ch.len_utf8()),
         };
 
