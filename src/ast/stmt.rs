@@ -7,9 +7,9 @@ pub enum Stmt {
     If(IfStmt),
     Loop(LoopStmt),
     Break,
-    Return,
+    Return(ReturnStmt),
     Expr(ExprStmt),
-    Fun,
+    Fun(FunStmt),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -113,5 +113,41 @@ impl LoopStmt {
 impl From<LoopStmt> for Stmt {
     fn from(stmt: LoopStmt) -> Self {
         Self::Loop(stmt)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReturnStmt {
+    pub value: Option<Expr>,
+}
+
+impl ReturnStmt {
+    pub fn new(value: Option<Expr>) -> Self {
+        Self { value }
+    }
+}
+
+impl From<ReturnStmt> for Stmt {
+    fn from(stmt: ReturnStmt) -> Self {
+        Self::Return(stmt)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FunStmt {
+    pub name: String,
+    pub params: Vec<String>,
+    pub body: Block,
+}
+
+impl FunStmt {
+    pub fn new(name: String, params: Vec<String>, body: Block) -> Self {
+        Self { name, params, body }
+    }
+}
+
+impl From<FunStmt> for Stmt {
+    fn from(stmt: FunStmt) -> Self {
+        Self::Fun(stmt)
     }
 }
