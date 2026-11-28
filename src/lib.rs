@@ -3,3 +3,4 @@ mod cfg;
 pub mod error;
 mod lexer;
 mod parser;
+pub mod value;
